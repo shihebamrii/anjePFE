@@ -1,0 +1,815 @@
+% ============================================================
+%  USER STORIES — Projet PFE
+%  Langue : Français
+%  NE PAS COMPILER — fichier source LaTeX uniquement
+% ============================================================
+\documentclass[12pt,a4paper]{article}
+
+% ── Encodage & langue ──────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+
+% ── Mise en page ───────────────────────────────────────────
+\usepackage[
+  top=2cm, bottom=2cm,
+  left=2cm, right=2cm
+]{geometry}
+\usepackage{parskip}            % Espacement entre paragraphes
+\usepackage{setspace}           % Interligne
+\onehalfspacing
+
+% ── Polices ────────────────────────────────────────────────
+\usepackage{lmodern}
+\usepackage{amssymb} % Pour \blacktriangleright
+
+% ── Couleurs ───────────────────────────────────────────────
+\usepackage{array} % DOIT ETRE AVANT xcolor[table] pour colortbl
+\usepackage[table,dvipsnames,svgnames]{xcolor}
+
+% Palette personnalisée
+\definecolor{chefBlue}{HTML}{1B4F72}
+\definecolor{chefBg}{HTML}{D6EAF8}
+\definecolor{teacherGreen}{HTML}{1E8449}
+\definecolor{teacherBg}{HTML}{D5F5E3}
+\definecolor{studentOrange}{HTML}{D35400}
+\definecolor{studentBg}{HTML}{FDEBD0}
+\definecolor{headerBg}{HTML}{2C3E50}
+\definecolor{accentGold}{HTML}{F39C12}
+\definecolor{lightGray}{HTML}{F2F3F4}
+\definecolor{darkText}{HTML}{2C3E50}
+\definecolor{routeGray}{HTML}{7F8C8D}
+
+% ── Tableaux ───────────────────────────────────────────────
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{makecell}
+\renewcommand{\arraystretch}{1.4}
+
+% ── Listes ─────────────────────────────────────────────────
+\usepackage{enumitem}
+
+% ── Symboles (pifont) ──────────────────────────────────────
+\usepackage{pifont}
+
+% ── Comparaison de chaînes (etoolbox) ──────────────────────
+\usepackage{etoolbox}
+
+% ── Boîtes colorées (tcolorbox) ────────────────────────────
+\usepackage[most]{tcolorbox}
+
+% Boîte pour chaque rôle
+\newtcolorbox{studentbox}[1][]{
+  enhanced, breakable,
+  colframe=studentOrange, colback=studentBg!30,
+  coltitle=white, colbacktitle=studentOrange,
+  fonttitle=\bfseries\large,
+  title={#1},
+  boxrule=1pt, arc=4pt,
+  left=8pt, right=8pt, top=6pt, bottom=6pt,
+  drop shadow={opacity=0.15},
+}
+
+\newtcolorbox{teacherbox}[1][]{
+  enhanced, breakable,
+  colframe=teacherGreen, colback=teacherBg!30,
+  coltitle=white, colbacktitle=teacherGreen,
+  fonttitle=\bfseries\large,
+  title={#1},
+  boxrule=1pt, arc=4pt,
+  left=8pt, right=8pt, top=6pt, bottom=6pt,
+  drop shadow={opacity=0.15},
+}
+
+\newtcolorbox{chefbox}[1][]{
+  enhanced, breakable,
+  colframe=chefBlue, colback=chefBg!30,
+  coltitle=white, colbacktitle=chefBlue,
+  fonttitle=\bfseries\large,
+  title={#1},
+  boxrule=1pt, arc=4pt,
+  left=8pt, right=8pt, top=6pt, bottom=6pt,
+  drop shadow={opacity=0.15},
+}
+
+% Boîte d'info / légende
+\newtcolorbox{infobox}[1][]{
+  enhanced,
+  colframe=accentGold, colback=accentGold!8,
+  coltitle=darkText, colbacktitle=accentGold!25,
+  fonttitle=\bfseries,
+  title={#1},
+  boxrule=0.8pt, arc=3pt,
+  left=6pt, right=6pt,
+}
+
+% ── En-têtes / pieds de page ──────────────────────────────
+\usepackage{fancyhdr}
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{routeGray}\textit{User Stories — Projet PFE}}
+\fancyhead[R]{\small\color{routeGray}\textit{\today}}
+\fancyfoot[C]{\small\color{routeGray}\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% ── Hyperliens ─────────────────────────────────────────────
+\usepackage[hidelinks]{hyperref}
+
+% ── Commandes utilitaires ──────────────────────────────────
+\newcommand{\route}[1]{\texorpdfstring{\texttt{\small\color{routeGray}#1}}{#1}}
+\newcommand{\httpmethod}[1]{%
+  \ifstrequal{#1}{GET}{\colorbox{blue!15}{\texttt{\bfseries\color{blue!70!black}GET}}}{}%
+  \ifstrequal{#1}{POST}{\colorbox{green!18}{\texttt{\bfseries\color{green!60!black}POST}}}{}%
+  \ifstrequal{#1}{PUT}{\colorbox{orange!18}{\texttt{\bfseries\color{orange!70!black}PUT}}}{}%
+  \ifstrequal{#1}{DELETE}{\colorbox{red!15}{\texttt{\bfseries\color{red!70!black}DELETE}}}{}%
+}
+\newcommand{\usmark}{\color{accentGold}$\blacktriangleright$\;}
+\newcommand{\cmark}{\textcolor{teacherGreen}{\ding{51}}}
+\newcommand{\xmark}{\textcolor{red}{\ding{55}}}
+
+% ── Titre ──────────────────────────────────────────────────
+\usepackage{tikz}
+\usetikzlibrary{shadows}
+
+% ============================================================
+\begin{document}
+\hypersetup{pageanchor=false}
+
+% ── PAGE DE TITRE ──────────────────────────────────────────
+\begin{titlepage}
+  \centering
+  \vspace*{3cm}
+
+  {\Huge\bfseries\color{headerBg} Cahier des User Stories}\\[0.6cm]
+  {\Large\color{routeGray} Projet de Fin d'Études}\\[1.5cm]
+
+  \begin{tikzpicture}
+    \draw[headerBg, line width=2pt] (0,0) -- (12,0);
+  \end{tikzpicture}\\[1.5cm]
+
+  {\large\color{darkText}
+    Analyse complète du \textbf{Backend} :\\[0.3cm]
+    \textit{Rôles : Étudiant · Enseignant · Chef de Département}
+  }\\[2cm]
+
+  \begin{infobox}[\centering Modules analysés]
+    \centering
+    \small
+    Authentification \textbullet\;
+    Départements \textbullet\;
+    Académique \textbullet\;
+    Notes \textbullet\;
+    Présence \textbullet\;
+    Réclamations \textbullet\;
+    Chat \textbullet\;
+    Actualités \textbullet\;
+    Événements \textbullet\;
+    Stages \textbullet\;
+    Utilisateurs
+  \end{infobox}
+
+  \vfill
+  {\small\color{routeGray} Document généré automatiquement à partir de l'analyse du code source.}\\[0.5cm]
+  {\small\color{routeGray} \today}
+\end{titlepage}
+\hypersetup{pageanchor=true}
+
+% ── TABLE DES MATIÈRES ─────────────────────────────────────
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{Introduction}
+% ============================================================
+
+Ce document présente les \textbf{user stories} (récits utilisateur) extraites de l'analyse complète du backend de l'application. Chaque user story décrit une fonctionnalité accessible à un rôle donné, accompagnée de la route API correspondante.
+
+\subsection{Rôles du système}
+
+Le système définit \textbf{cinq rôles} dans le modèle \texttt{User}, dont trois principaux :
+
+\begin{center}
+\begin{tabular}{llp{8cm}}
+  \toprule
+  \textbf{Rôle} & \textbf{Middleware} & \textbf{Description} \\
+  \midrule
+  \textbf{STUDENT}     & \texttt{protect}             & Accès limité à ses propres données personnelles \\
+  \textbf{TEACHER}     & \texttt{protect + teacher}    & Gestion des notes et de la présence pour ses étudiants \\
+  \textbf{CHEF\_DEPT}  & \texttt{protect + chefDept}   & Administration complète du département + capacités enseignant \\
+  \textbf{ADMIN}       & \texttt{protect + admin}      & Super-utilisateur, passe tous les contrôles d'accès \\
+  \textbf{PARTNER}     & \texttt{protect}              & Rôle défini mais sans routes spécifiques actuellement \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Légende des méthodes HTTP}
+
+\begin{center}
+  \httpmethod{GET} Lecture \qquad
+  \httpmethod{POST} Création \qquad
+  \httpmethod{PUT} Modification \qquad
+  \httpmethod{DELETE} Suppression
+\end{center}
+
+\subsection{Hiérarchie des permissions}
+
+\begin{infobox}[Héritage des droits]
+  Le middleware \texttt{chefDept} autorise aussi le rôle \texttt{ADMIN}.
+  Le middleware \texttt{teacher} autorise \texttt{TEACHER}, \texttt{CHEF\_DEPT} et \texttt{ADMIN}.
+  Cela signifie :
+  \[
+    \textbf{STUDENT} \subset \textbf{TEACHER} \subset \textbf{CHEF\_DEPT} \subset \textbf{ADMIN}
+  \]
+  Chaque rôle supérieur hérite des capacités du rôle inférieur.
+\end{infobox}
+
+\newpage
+
+% ============================================================
+\section{User Stories — Étudiant (\texttt{STUDENT})}
+% ============================================================
+
+\begin{studentbox}[\Large\ding{56} Rôle : Étudiant]
+
+% ─── Authentification ──────────────────────────────────────
+\subsection*{Authentification}
+
+\begin{itemize}[leftmargin=1.2cm, labelsep=0.4cm]
+  \item[\usmark] \textbf{En tant qu'étudiant}, je peux \textbf{créer un compte} en fournissant mon nom, prénom, email et mot de passe.\\
+    \httpmethod{POST} \route{/api/auth/register}
+
+  \item[\usmark] \textbf{En tant qu'étudiant}, je peux \textbf{me connecter} avec mon email et mot de passe pour obtenir un jeton JWT.\\
+    \httpmethod{POST} \route{/api/auth/login}
+
+  \item[\usmark] \textbf{En tant qu'étudiant}, je peux \textbf{consulter mon profil} (nom, email, rôle, département, identifiant étudiant).\\
+    \httpmethod{GET} \route{/api/auth/profile}
+\end{itemize}
+
+% ─── Emploi du temps ───────────────────────────────────────
+\subsection*{Emploi du temps}
+
+\begin{itemize}[leftmargin=1.2cm, labelsep=0.4cm]
+  \item[\usmark] \textbf{En tant qu'étudiant}, je peux \textbf{consulter mon emploi du temps} personnalisé, résolu automatiquement à partir de la classe (\texttt{classId}) associée à mon profil.\\
+    \httpmethod{GET} \route{/api/academic/schedule/student}
+\end{itemize}
+
+% ─── Notes ─────────────────────────────────────────────────
+\subsection*{Notes}
+
+\begin{itemize}[leftmargin=1.2cm, labelsep=0.4cm]
+  \item[\usmark] \textbf{En tant qu'étudiant}, je peux \textbf{consulter mes notes}, filtrées par semestre. Le système restreint automatiquement la requête à mes propres notes uniquement.\\
+    \httpmethod{GET} \route{/api/grades}
+\end{itemize}
+
+% ─── Présence ──────────────────────────────────────────────
+\subsection*{Présence}
+
+\begin{itemize}[leftmargin=1.2cm, labelsep=0.4cm]
+  \item[\usmark] \textbf{En tant qu'étudiant}, je peux \textbf{consulter mes enregistrements de présence/absence}. Le système restreint la requête à mes propres enregistrements.\\
+    \httpmethod{GET} \route{/api/attendance}
+\end{itemize}
+
+% ─── Réclamations ──────────────────────────────────────────
+\subsection*{Réclamations de notes}
+
+\begin{itemize}[leftmargin=1.2cm, labelsep=0.4cm]
+  \item[\usmark] \textbf{En tant qu'étudiant}, je peux \textbf{déposer une réclamation} sur une de mes notes en précisant l'identifiant de la note (\texttt{gradeId}) et le motif de la réclamation.\\
+    \textit{Contraintes : je ne peux réclamer que mes propres notes et je ne peux pas déposer deux réclamations sur la même note.}\\
+    \httpmethod{POST} \route{/api/complaints}
+
+  \item[\usmark] \textbf{En tant qu'étudiant}, je peux \textbf{consulter mes réclamations} et suivre leur statut (en attente, acceptée, rejetée).\\
+    \httpmethod{GET} \route{/api/complaints}
+\end{itemize}
+
+% ─── Chat ──────────────────────────────────────────────────
+\subsection*{Messagerie instantanée (Chat)}
+
+\begin{itemize}[leftmargin=1.2cm, labelsep=0.4cm]
+  \item[\usmark] \textbf{En tant qu'étudiant}, je peux \textbf{accéder au salon de chat général} et au \textbf{salon de ma classe}.\\
+    \httpmethod{GET} \route{/api/chat/rooms}
+
+  \item[\usmark] \textbf{En tant qu'étudiant}, je peux \textbf{consulter l'historique} des messages d'un salon.\\
+    \httpmethod{GET} \route{/api/chat/history/:room}
+
+  \item[\usmark] \textbf{En tant qu'étudiant}, je peux \textbf{envoyer des messages} en temps réel, rejoindre/quitter des salons, et voir les indicateurs de frappe via \textbf{WebSocket}.
+\end{itemize}
+
+% ─── Contenu public ────────────────────────────────────────
+\subsection*{Contenu public (sans authentification requise)}
+
+\begin{itemize}[leftmargin=1.2cm, labelsep=0.4cm]
+  \item[\usmark] \textbf{En tant qu'étudiant}, je peux \textbf{consulter la liste des actualités} et lire un article en détail.\\
+    \httpmethod{GET} \route{/api/news} \quad \httpmethod{GET} \route{/api/news/:id}
+
+  \item[\usmark] \textbf{En tant qu'étudiant}, je peux \textbf{consulter la liste des événements} et voir les détails d'un événement.\\
+    \httpmethod{GET} \route{/api/events} \quad \httpmethod{GET} \route{/api/events/:id}
+
+  \item[\usmark] \textbf{En tant qu'étudiant}, je peux \textbf{consulter les offres de stages} ouvertes et voir les détails d'une offre.\\
+    \httpmethod{GET} \route{/api/stages} \quad \httpmethod{GET} \route{/api/stages/:id}
+\end{itemize}
+
+\end{studentbox}
+
+\newpage
+
+% ============================================================
+\section{User Stories — Enseignant (\texttt{TEACHER})}
+% ============================================================
+
+\begin{teacherbox}[\Large\ding{56} Rôle : Enseignant]
+
+\begin{infobox}[Héritage]
+  L'enseignant \textbf{hérite de toutes les capacités de lecture} de l'étudiant (emploi du temps, contenu public, chat) et acquiert des \textbf{capacités de gestion} supplémentaires.
+\end{infobox}
+
+% ─── Emploi du temps ───────────────────────────────────────
+\subsection*{Emploi du temps}
+
+\begin{itemize}[leftmargin=1.2cm, labelsep=0.4cm]
+  \item[\usmark] \textbf{En tant qu'enseignant}, je peux \textbf{consulter mon emploi du temps personnel}, résolu par correspondance de mon nom et prénom dans les séances.\\
+    \httpmethod{GET} \route{/api/academic/schedule/teacher}
+\end{itemize}
+
+% ─── Cours & Classes ──────────────────────────────────────
+\subsection*{Mes cours et classes}
+
+\begin{itemize}[leftmargin=1.2cm, labelsep=0.4cm]
+  \item[\usmark] \textbf{En tant qu'enseignant}, je peux \textbf{consulter la liste des cours que j'enseigne}, déduits automatiquement des séances programmées.\\
+    \httpmethod{GET} \route{/api/academic/teacher/courses}
+
+  \item[\usmark] \textbf{En tant qu'enseignant}, je peux \textbf{consulter la liste des classes auxquelles j'enseigne}, avec les matières associées et le nombre de séances.\\
+    \httpmethod{GET} \route{/api/academic/teacher/classes}
+\end{itemize}
+
+% ─── Notes ─────────────────────────────────────────────────
+\subsection*{Gestion des notes}
+
+\begin{itemize}[leftmargin=1.2cm, labelsep=0.4cm]
+  \item[\usmark] \textbf{En tant qu'enseignant}, je peux \textbf{consulter les notes} que j'ai attribuées, filtrées par \texttt{studentId} et/ou \texttt{semester}.\\
+    \httpmethod{GET} \route{/api/grades}
+
+  \item[\usmark] \textbf{En tant qu'enseignant}, je peux \textbf{ajouter une note} pour un étudiant (matière, score, coefficient, type, semestre).\\
+    \httpmethod{POST} \route{/api/grades}
+
+  \item[\usmark] \textbf{En tant qu'enseignant}, je peux \textbf{supprimer une note} que j'ai créée.\\
+    \httpmethod{DELETE} \route{/api/grades/:id}
+
+  \item[\usmark] \textbf{En tant qu'enseignant}, je peux \textbf{importer des notes en masse} depuis un fichier Excel (colonnes : \texttt{studentId}, \texttt{score}) pour toute une classe.\\
+    \httpmethod{POST} \route{/api/grades/bulk-upload}
+\end{itemize}
+
+% ─── Présence ──────────────────────────────────────────────
+\subsection*{Gestion de la présence}
+
+\begin{itemize}[leftmargin=1.2cm, labelsep=0.4cm]
+  \item[\usmark] \textbf{En tant qu'enseignant}, je peux \textbf{consulter les enregistrements de présence} de mes séances.\\
+    \httpmethod{GET} \route{/api/attendance}
+
+  \item[\usmark] \textbf{En tant qu'enseignant}, je peux \textbf{marquer la présence d'un étudiant} individuellement (présent, absent, en retard).\\
+    \httpmethod{POST} \route{/api/attendance}
+
+  \item[\usmark] \textbf{En tant qu'enseignant}, je peux \textbf{marquer la présence en masse} pour toute une séance de classe.\\
+    \httpmethod{POST} \route{/api/attendance/bulk}
+
+  \item[\usmark] \textbf{En tant qu'enseignant}, je peux \textbf{modifier un enregistrement de présence} (statut, justification).\\
+    \httpmethod{PUT} \route{/api/attendance/:id}
+
+  \item[\usmark] \textbf{En tant qu'enseignant}, je peux \textbf{supprimer un enregistrement de présence}.\\
+    \httpmethod{DELETE} \route{/api/attendance/:id}
+
+  \item[\usmark] \textbf{En tant qu'enseignant}, je peux \textbf{récupérer la liste des étudiants d'une classe} par nom de classe, pour faciliter la prise de présence.\\
+    \httpmethod{GET} \route{/api/attendance/students-by-class}
+\end{itemize}
+
+% ─── Utilisateurs ──────────────────────────────────────────
+\subsection*{Liste des utilisateurs}
+
+\begin{itemize}[leftmargin=1.2cm, labelsep=0.4cm]
+  \item[\usmark] \textbf{En tant qu'enseignant}, je peux \textbf{consulter la liste des étudiants}. Le système restreint automatiquement les résultats au rôle \texttt{STUDENT}.\\
+    \httpmethod{GET} \route{/api/users}
+\end{itemize}
+
+% ─── Chat ──────────────────────────────────────────────────
+\subsection*{Messagerie instantanée}
+
+\begin{itemize}[leftmargin=1.2cm, labelsep=0.4cm]
+  \item[\usmark] \textbf{En tant qu'enseignant}, je peux \textbf{accéder au salon général} et aux \textbf{salons de toutes les classes auxquelles j'enseigne}.\\
+    \httpmethod{GET} \route{/api/chat/rooms}
+
+  \item[\usmark] \textbf{En tant qu'enseignant}, je peux envoyer des messages et interagir en temps réel via WebSocket.
+\end{itemize}
+
+\end{teacherbox}
+
+\newpage
+
+% ============================================================
+\section{User Stories — Chef de Département (\texttt{CHEF\_DEPT})}
+% ============================================================
+
+\begin{chefbox}[\Large\ding{56} Rôle : Chef de Département]
+
+\begin{infobox}[Héritage]
+  Le Chef de Département \textbf{hérite de toutes les capacités de l'Enseignant} (notes, présence, cours, etc.) et acquiert l'\textbf{administration complète du département}.
+\end{infobox}
+
+% ─── Département ───────────────────────────────────────────
+\subsection*{Gestion du département}
+
+\begin{itemize}[leftmargin=1.2cm, labelsep=0.4cm]
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{consulter tous les départements} avec le nombre d'enseignants.\\
+    \httpmethod{GET} \route{/api/departments}
+
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{consulter un département en détail} (tous les enseignants, classes, etc.).\\
+    \httpmethod{GET} \route{/api/departments/:id}
+
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{consulter mon propre département}, identifié par mon adresse email.\\
+    \httpmethod{GET} \route{/api/departments/my}
+\end{itemize}
+
+% ─── Enseignants ───────────────────────────────────────────
+\subsection*{Gestion des enseignants}
+
+\begin{itemize}[leftmargin=1.2cm, labelsep=0.4cm]
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{ajouter un enseignant} à mon département (nom, prénom, email, grade, spécialisation).\\
+    \httpmethod{POST} \route{/api/departments/my/teachers}
+
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{modifier les informations} d'un enseignant de mon département.\\
+    \httpmethod{PUT} \route{/api/departments/my/teachers/:teacherId}
+
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{supprimer un enseignant} de mon département.\\
+    \httpmethod{DELETE} \route{/api/departments/my/teachers/:teacherId}
+\end{itemize}
+
+% ─── Classes ───────────────────────────────────────────────
+\subsection*{Gestion des classes}
+
+\begin{itemize}[leftmargin=1.2cm, labelsep=0.4cm]
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{créer une nouvelle classe} (nom, niveau, parcours, année académique).\\
+    \httpmethod{POST} \route{/api/departments/my/classes}
+
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{modifier une classe} existante.\\
+    \httpmethod{PUT} \route{/api/departments/my/classes/:classId}
+
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{supprimer une classe}.\\
+    \httpmethod{DELETE} \route{/api/departments/my/classes/:classId}
+
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{importer des étudiants en masse} dans une classe à partir d'une liste (nom, prénom, email, numéro d'inscription). Un mot de passe par défaut (\texttt{iset123}) est attribué automatiquement.\\
+    \httpmethod{POST} \route{/api/departments/my/classes/:classId/students/bulk}
+\end{itemize}
+
+% ─── Étudiants ─────────────────────────────────────────────
+\subsection*{Gestion des étudiants}
+
+\begin{itemize}[leftmargin=1.2cm, labelsep=0.4cm]
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{consulter tous les étudiants} de mon département.\\
+    \httpmethod{GET} \route{/api/academic/students}
+
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{ajouter un étudiant} à mon département avec mot de passe par défaut.\\
+    \httpmethod{POST} \route{/api/academic/students}
+
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{modifier le profil d'un étudiant} (nom, email, classe, numéro d'inscription).\\
+    \httpmethod{PUT} \route{/api/academic/students/:id}
+
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{supprimer un étudiant} de mon département.\\
+    \httpmethod{DELETE} \route{/api/academic/students/:id}
+\end{itemize}
+
+% ─── Cours ─────────────────────────────────────────────────
+\subsection*{Gestion des cours}
+
+\begin{itemize}[leftmargin=1.2cm, labelsep=0.4cm]
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{consulter tous les cours} de mon département.\\
+    \httpmethod{GET} \route{/api/academic/courses}
+
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{ajouter un cours} (nom, code, semestre, niveau, volume horaire).\\
+    \httpmethod{POST} \route{/api/academic/courses}
+
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{modifier un cours} existant.\\
+    \httpmethod{PUT} \route{/api/academic/courses/:id}
+
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{supprimer un cours}.\\
+    \httpmethod{DELETE} \route{/api/academic/courses/:id}
+\end{itemize}
+
+% ─── Emploi du temps ───────────────────────────────────────
+\subsection*{Gestion de l'emploi du temps}
+
+\begin{itemize}[leftmargin=1.2cm, labelsep=0.4cm]
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{consulter l'emploi du temps} de n'importe quelle classe de mon département.\\
+    \httpmethod{GET} \route{/api/academic/schedule}
+
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{consulter toutes les salles} disponibles.\\
+    \httpmethod{GET} \route{/api/academic/rooms}
+
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{créer une séance} (affecter un cours, enseignant, salle, créneau horaire à une classe).\\
+    \httpmethod{POST} \route{/api/academic/sessions}
+
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{modifier une séance} programmée.\\
+    \httpmethod{PUT} \route{/api/academic/sessions/:id}
+
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{supprimer une séance}.\\
+    \httpmethod{DELETE} \route{/api/academic/sessions/:id}
+\end{itemize}
+
+% ─── Réclamations ──────────────────────────────────────────
+\subsection*{Gestion des réclamations}
+
+\begin{itemize}[leftmargin=1.2cm, labelsep=0.4cm]
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{consulter toutes les réclamations} de tous les étudiants (pas seulement les miens).\\
+    \httpmethod{GET} \route{/api/complaints}
+
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{traiter une réclamation} en l'\textbf{acceptant} ou la \textbf{rejetant}, avec un message de réponse optionnel.\\
+    \httpmethod{PUT} \route{/api/complaints/:id/resolve}
+\end{itemize}
+
+% ─── Actualités ────────────────────────────────────────────
+\subsection*{Gestion des actualités}
+
+\begin{itemize}[leftmargin=1.2cm, labelsep=0.4cm]
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{créer un article d'actualité} avec image et document en pièce jointe.\\
+    \httpmethod{POST} \route{/api/news}
+
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{modifier un article} existant.\\
+    \httpmethod{PUT} \route{/api/news/:id}
+
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{supprimer un article}.\\
+    \httpmethod{DELETE} \route{/api/news/:id}
+\end{itemize}
+
+% ─── Événements ────────────────────────────────────────────
+\subsection*{Gestion des événements}
+
+\begin{itemize}[leftmargin=1.2cm, labelsep=0.4cm]
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{créer un événement} (titre, description, dates, lieu, audience cible) avec pièces jointes.\\
+    \httpmethod{POST} \route{/api/events}
+
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{modifier un événement}.\\
+    \httpmethod{PUT} \route{/api/events/:id}
+
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{supprimer un événement}.\\
+    \httpmethod{DELETE} \route{/api/events/:id}
+\end{itemize}
+
+% ─── Stages ────────────────────────────────────────────────
+\subsection*{Gestion des offres de stages}
+
+\begin{itemize}[leftmargin=1.2cm, labelsep=0.4cm]
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{créer une offre de stage} (titre, entreprise, lieu, durée, type, description, email de contact, date limite).\\
+    \httpmethod{POST} \route{/api/stages}
+
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{modifier une offre de stage}.\\
+    \httpmethod{PUT} \route{/api/stages/:id}
+
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{supprimer une offre de stage}.\\
+    \httpmethod{DELETE} \route{/api/stages/:id}
+\end{itemize}
+
+% ─── Chat ──────────────────────────────────────────────────
+\subsection*{Messagerie instantanée}
+
+\begin{itemize}[leftmargin=1.2cm, labelsep=0.4cm]
+  \item[\usmark] \textbf{En tant que Chef}, je peux \textbf{accéder au salon général} et aux \textbf{salons de toutes les classes de mon département}.\\
+    \httpmethod{GET} \route{/api/chat/rooms}
+\end{itemize}
+
+\end{chefbox}
+
+\newpage
+
+% ============================================================
+\section{Matrice récapitulative des fonctionnalités}
+% ============================================================
+
+Le tableau ci-dessous résume les accès de chaque rôle aux fonctionnalités principales du système.
+
+\vspace{0.5cm}
+
+\begin{center}
+\small
+\begin{tabular}{>{\raggedright\arraybackslash}p{5.5cm}ccc}
+  \toprule
+  \textbf{Fonctionnalité} & \textbf{Étudiant} & \textbf{Enseignant} & \textbf{Chef Dept} \\
+  \midrule
+  Inscription / Connexion / Profil & \cmark & \cmark & \cmark \\
+  Consulter son emploi du temps & \cmark & \cmark & \cmark \\
+  Consulter ses notes & \cmark\; \footnotesize{(lecture)} & \cmark\; \footnotesize{+ écriture} & \cmark\; \footnotesize{(hérité)} \\
+  Ajouter / Supprimer des notes & \xmark & \cmark & \cmark\; \footnotesize{(hérité)} \\
+  Import en masse de notes (Excel) & \xmark & \cmark & \cmark\; \footnotesize{(hérité)} \\
+  Consulter la présence & \cmark\; \footnotesize{(lecture)} & \cmark\; \footnotesize{+ écriture} & \cmark\; \footnotesize{(hérité)} \\
+  Marquer / Modifier / Supprimer la présence & \xmark & \cmark & \cmark\; \footnotesize{(hérité)} \\
+  Présence en masse & \xmark & \cmark & \cmark\; \footnotesize{(hérité)} \\
+  Déposer une réclamation de note & \cmark & \xmark & \xmark \\
+  Traiter les réclamations & \xmark & \xmark & \cmark \\
+  Gérer les enseignants & \xmark & \xmark & \cmark\; \footnotesize{CRUD} \\
+  Gérer les classes & \xmark & \xmark & \cmark\; \footnotesize{CRUD} \\
+  Gérer les étudiants & \xmark & \xmark & \cmark\; \footnotesize{CRUD + mass} \\
+  Gérer les cours (modules) & \xmark & \xmark & \cmark\; \footnotesize{CRUD} \\
+  Gérer les séances (emploi du temps) & \xmark & \xmark & \cmark\; \footnotesize{CRUD} \\
+  Gérer les actualités & \xmark & \xmark & \cmark\; \footnotesize{CRUD} \\
+  Gérer les événements & \xmark & \xmark & \cmark\; \footnotesize{CRUD} \\
+  Gérer les offres de stages & \xmark & \xmark & \cmark\; \footnotesize{CRUD} \\
+  Chat (salon général) & \cmark & \cmark & \cmark \\
+  Chat (salons de classe) & \cmark\; \footnotesize{(sa classe)} & \cmark\; \footnotesize{(ses classes)} & \cmark\; \footnotesize{(tout le dept)} \\
+  Parcourir actualités / événements / stages & \cmark\; \footnotesize{Public} & \cmark\; \footnotesize{Public} & \cmark\; \footnotesize{Public} \\
+  Consulter la liste des utilisateurs & \xmark & \cmark\; \footnotesize{(étudiants)} & \cmark\; \footnotesize{(tous)} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\newpage
+
+% ============================================================
+\section{Annexe — Routes API complètes}
+% ============================================================
+
+\subsection{Authentification — \route{/api/auth}}
+
+\begin{center}
+\begin{tabular}{|l|l|p{6cm}|l|}
+  \hline
+  \rowcolor{headerBg}
+  \textcolor{white}{\textbf{Méthode}} & \textcolor{white}{\textbf{Route}} & \textcolor{white}{\textbf{Description}} & \textcolor{white}{\textbf{Accès}} \\
+  \hline
+  \httpmethod{POST} & \texttt{/register} & Créer un compte & Public \\
+  \httpmethod{POST} & \texttt{/login} & Se connecter & Public \\
+  \httpmethod{GET}  & \texttt{/profile} & Voir son profil & Authentifié \\
+  \hline
+\end{tabular}
+\end{center}
+
+\subsection{Académique — \route{/api/academic}}
+
+\begin{center}
+\small
+\begin{tabular}{|l|l|p{6cm}|l|}
+  \hline
+  \rowcolor{headerBg}
+  \textcolor{white}{\textbf{Méthode}} & \textcolor{white}{\textbf{Route}} & \textcolor{white}{\textbf{Description}} & \textcolor{white}{\textbf{Accès}} \\
+  \hline
+  \httpmethod{GET} & \texttt{/schedule/student} & Emploi du temps étudiant & Étudiant \\
+  \httpmethod{GET} & \texttt{/schedule/teacher} & Emploi du temps enseignant & Enseignant \\
+  \httpmethod{GET} & \texttt{/teacher/courses} & Cours de l'enseignant & Enseignant \\
+  \httpmethod{GET} & \texttt{/teacher/classes} & Classes de l'enseignant & Enseignant \\
+  \httpmethod{GET} & \texttt{/courses} & Cours du département & Chef \\
+  \httpmethod{GET} & \texttt{/rooms} & Salles disponibles & Chef \\
+  \httpmethod{GET} & \texttt{/schedule} & Emploi du temps (par classe) & Chef \\
+  \httpmethod{GET} & \texttt{/students} & Étudiants du département & Chef \\
+  \httpmethod{POST} & \texttt{/students} & Ajouter un étudiant & Chef \\
+  \httpmethod{PUT} & \texttt{/students/:id} & Modifier un étudiant & Chef \\
+  \httpmethod{DELETE} & \texttt{/students/:id} & Supprimer un étudiant & Chef \\
+  \httpmethod{POST} & \texttt{/courses} & Ajouter un cours & Chef \\
+  \httpmethod{PUT} & \texttt{/courses/:id} & Modifier un cours & Chef \\
+  \httpmethod{DELETE} & \texttt{/courses/:id} & Supprimer un cours & Chef \\
+  \httpmethod{POST} & \texttt{/sessions} & Créer une séance & Chef \\
+  \httpmethod{PUT} & \texttt{/sessions/:id} & Modifier une séance & Chef \\
+  \httpmethod{DELETE} & \texttt{/sessions/:id} & Supprimer une séance & Chef \\
+  \hline
+\end{tabular}
+\end{center}
+
+\subsection{Départements — \route{/api/departments}}
+
+\begin{center}
+\small
+\begin{tabular}{l>{\raggedright\arraybackslash}p{5.6cm}>{\raggedright\arraybackslash}p{4.4cm}l}
+  \toprule
+  \textbf{Méthode} & \textbf{Route} & \textbf{Description} & \textbf{Accès} \\
+  \midrule
+  \httpmethod{GET} & \texttt{/} & Liste des départements & Authentifié \\
+  \httpmethod{GET} & \texttt{/:id} & Détails d'un département & Authentifié \\
+  \httpmethod{GET} & \texttt{/my} & Mon département & Authentifié \\
+  \httpmethod{POST} & \texttt{/my/teachers} & Ajouter un enseignant & Chef \\
+  \httpmethod{PUT} & \texttt{/my/teachers/:id} & Modifier un enseignant & Chef \\
+  \httpmethod{DELETE} & \texttt{/my/teachers/:id} & Supprimer un enseignant & Chef \\
+  \httpmethod{POST} & \texttt{/my/classes} & Créer une classe & Chef \\
+  \httpmethod{PUT} & \texttt{/my/classes/:id} & Modifier une classe & Chef \\
+  \httpmethod{DELETE} & \texttt{/my/classes/:id} & Supprimer une classe & Chef \\
+  \httpmethod{POST} & \texttt{/my/classes/:id/students/}\newline\texttt{bulk} & Import en masse & Chef \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Notes — \route{/api/grades}}
+
+\begin{center}
+\begin{tabular}{l>{\raggedright\arraybackslash}p{5.6cm}>{\raggedright\arraybackslash}p{4.4cm}l}
+  \toprule
+  \textbf{Méthode} & \textbf{Route} & \textbf{Description} & \textbf{Accès} \\
+  \midrule
+  \httpmethod{GET} & \texttt{/} & Consulter les notes & Authentifié \\
+  \httpmethod{POST} & \texttt{/} & Ajouter une note & Enseignant \\
+  \httpmethod{POST} & \texttt{/bulk-upload} & Import Excel & Enseignant \\
+  \httpmethod{DELETE} & \texttt{/:id} & Supprimer une note & Enseignant \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Présence — \route{/api/attendance}}
+
+\begin{center}
+\begin{tabular}{l>{\raggedright\arraybackslash}p{5.6cm}>{\raggedright\arraybackslash}p{4.4cm}l}
+  \toprule
+  \textbf{Méthode} & \textbf{Route} & \textbf{Description} & \textbf{Accès} \\
+  \midrule
+  \httpmethod{GET} & \texttt{/} & Consulter la présence & Authentifié \\
+  \httpmethod{POST} & \texttt{/} & Marquer (individuel) & Enseignant \\
+  \httpmethod{POST} & \texttt{/bulk} & Marquer (en masse) & Enseignant \\
+  \httpmethod{GET} & \texttt{/students-by-class} & Étudiants d'une classe & Enseignant \\
+  \httpmethod{PUT} & \texttt{/:id} & Modifier un enregistrement & Enseignant \\
+  \httpmethod{DELETE} & \texttt{/:id} & Supprimer un enregistrement & Enseignant \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Réclamations — \route{/api/complaints}}
+
+\begin{center}
+\begin{tabular}{l>{\raggedright\arraybackslash}p{5.6cm}>{\raggedright\arraybackslash}p{4.4cm}l}
+  \toprule
+  \textbf{Méthode} & \textbf{Route} & \textbf{Description} & \textbf{Accès} \\
+  \midrule
+  \httpmethod{GET} & \texttt{/} & Consulter les réclamations & Authentifié \\
+  \httpmethod{POST} & \texttt{/} & Déposer une réclamation & Authentifié \\
+  \httpmethod{PUT} & \texttt{/:id/resolve} & Traiter une réclamation & Chef \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Chat — \route{/api/chat}}
+
+\begin{center}
+\begin{tabular}{l>{\raggedright\arraybackslash}p{5.6cm}>{\raggedright\arraybackslash}p{4.4cm}l}
+  \toprule
+  \textbf{Méthode} & \textbf{Route} & \textbf{Description} & \textbf{Accès} \\
+  \midrule
+  \httpmethod{GET} & \texttt{/rooms} & Salons disponibles & Authentifié \\
+  \httpmethod{GET} & \texttt{/history/:room} & Historique d'un salon & Authentifié \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Actualités — \route{/api/news}}
+
+\begin{center}
+\begin{tabular}{l>{\raggedright\arraybackslash}p{5.6cm}>{\raggedright\arraybackslash}p{4.4cm}l}
+  \toprule
+  \textbf{Méthode} & \textbf{Route} & \textbf{Description} & \textbf{Accès} \\
+  \midrule
+  \httpmethod{GET} & \texttt{/} & Liste des actualités & Public \\
+  \httpmethod{GET} & \texttt{/:id} & Détails d'un article & Public \\
+  \httpmethod{POST} & \texttt{/} & Créer un article & Chef \\
+  \httpmethod{PUT} & \texttt{/:id} & Modifier un article & Chef \\
+  \httpmethod{DELETE} & \texttt{/:id} & Supprimer un article & Chef \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Événements — \route{/api/events}}
+
+\begin{center}
+\begin{tabular}{l>{\raggedright\arraybackslash}p{5.6cm}>{\raggedright\arraybackslash}p{4.4cm}l}
+  \toprule
+  \textbf{Méthode} & \textbf{Route} & \textbf{Description} & \textbf{Accès} \\
+  \midrule
+  \httpmethod{GET} & \texttt{/} & Liste des événements & Public \\
+  \httpmethod{GET} & \texttt{/:id} & Détails d'un événement & Public \\
+  \httpmethod{POST} & \texttt{/} & Créer un événement & Chef \\
+  \httpmethod{PUT} & \texttt{/:id} & Modifier un événement & Chef \\
+  \httpmethod{DELETE} & \texttt{/:id} & Supprimer un événement & Chef \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Stages — \route{/api/stages}}
+
+\begin{center}
+\begin{tabular}{l>{\raggedright\arraybackslash}p{5.6cm}>{\raggedright\arraybackslash}p{4.4cm}l}
+  \toprule
+  \textbf{Méthode} & \textbf{Route} & \textbf{Description} & \textbf{Accès} \\
+  \midrule
+  \httpmethod{GET} & \texttt{/} & Liste des offres & Public \\
+  \httpmethod{GET} & \texttt{/:id} & Détails d'une offre & Public \\
+  \httpmethod{POST} & \texttt{/} & Créer une offre & Chef \\
+  \httpmethod{PUT} & \texttt{/:id} & Modifier une offre & Chef \\
+  \httpmethod{DELETE} & \texttt{/:id} & Supprimer une offre & Chef \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Utilisateurs — \route{/api/users}}
+
+\begin{center}
+\begin{tabular}{l>{\raggedright\arraybackslash}p{5.6cm}>{\raggedright\arraybackslash}p{4.4cm}l}
+  \toprule
+  \textbf{Méthode} & \textbf{Route} & \textbf{Description} & \textbf{Accès} \\
+  \midrule
+  \httpmethod{GET} & \texttt{/} & Liste des utilisateurs & Authentifié \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\end{document}
