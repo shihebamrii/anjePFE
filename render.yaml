@@ -1,0 +1,31 @@
+services:
+  # Backend API Service
+  - type: web
+    name: backend-api
+    env: node
+    rootDir: Backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: NODE_ENV
+        value: production
+
+  # Frontend Next.js App
+  - type: web
+    name: frontend-app
+    env: node
+    rootDir: Frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        # This points to the Render backend service url implicitly by referring to the service name
+        # If Render fails to interpolate this properly, we recommend replacing it with the actual URL
+        # provided to you by Render for the backend-api service.
+        sync: false
