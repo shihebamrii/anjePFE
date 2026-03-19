@@ -7,9 +7,16 @@ import {
   ArrowRight, BookOpen, Calendar, ChevronRight, Sparkles, 
   Zap, Shield, CheckCircle2, Globe, Star, MessageSquare,
   HelpCircle, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin,
-  Search, FileText, LayoutGrid, Info, ExternalLink, ArrowUpRight
+  Search, FileText, LayoutGrid, Info, ExternalLink, ArrowUpRight, Menu
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { newsService } from '@/services/newsService';
 import { eventService } from '@/services/eventService';
 import { departmentService } from '@/services/departmentService';
@@ -144,11 +151,44 @@ export default function HomePage() {
               <Search size={14} />
               <span className="text-[10px] font-bold uppercase tracking-widest">Rechercher</span>
             </div>
-            <Link href="/login">
+            <Link href="/login" className="hidden sm:block">
               <Button className="bg-brand hover:brightness-110 text-white rounded-lg px-6 h-10 text-[10px] font-black uppercase tracking-widest shadow-lg shadow-brand/10">
                 Accès Extranet
               </Button>
             </Link>
+
+            {/* Mobile Menu */}
+            <div className="lg:hidden flex items-center">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className={isScrolled ? "text-slate-600" : "text-brand md:text-slate-600"}>
+                    <Menu className="h-6 w-6" />
+                    <span className="sr-only">Toggle navigation menu</span>
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                  <SheetHeader>
+                    <SheetTitle className="text-left font-black text-brand uppercase tracking-tight flex items-center gap-2">
+                      <Building2 size={20} className="text-accent" />
+                      ISET Gafsa
+                    </SheetTitle>
+                  </SheetHeader>
+                  <div className="flex flex-col gap-6 mt-12">
+                    {['Institut', 'Départements', 'Formation', 'Manifestations', 'Entreprise'].map((item) => (
+                      <button key={item} className="text-left text-sm font-black uppercase tracking-widest text-slate-600 hover:text-accent transition-colors">
+                        {item}
+                      </button>
+                    ))}
+                    <div className="h-px w-full bg-slate-100 my-4" />
+                    <Link href="/login" className="w-full">
+                      <Button className="w-full bg-brand hover:brightness-110 text-white rounded-lg h-12 text-xs font-black uppercase tracking-widest shadow-lg shadow-brand/10">
+                        Accès Extranet
+                      </Button>
+                    </Link>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
         </div>
       </nav>

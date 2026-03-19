@@ -10,6 +10,11 @@ import {
   ChevronLeft, Building2, BookOpen, School, MapPin, CalendarDays, MessageSquare, AlertTriangle
 } from 'lucide-react';
 import { cn, getInitials } from '@/lib/utils';
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 const navItems = {
   ADMIN: [
@@ -209,30 +214,27 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Mobile hamburger */}
-      <button
-        onClick={() => setMobileOpen(!mobileOpen)}
-        className="fixed top-4 left-4 z-50 lg:hidden p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-card text-slate-700 dark:text-slate-300 hover:shadow-card-hover transition-all"
-      >
-        {mobileOpen ? <X size={18} /> : <Menu size={18} />}
-      </button>
+      {/* Mobile Sheet */}
+      <div className="lg:hidden">
+        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+          <SheetTrigger asChild>
+            <button
+              className="fixed top-3 left-4 z-50 p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm text-slate-700 dark:text-slate-300 hover:shadow-md transition-all"
+            >
+              <Menu size={20} />
+            </button>
+          </SheetTrigger>
+          <SheetContent side="left" className="p-0 w-[var(--sidebar-width)] border-r-0">
+            <SidebarContent />
+          </SheetContent>
+        </Sheet>
+      </div>
 
-      {/* Mobile backdrop */}
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 bg-black/30 z-40 lg:hidden backdrop-blur-sm transition-opacity"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
-
-      {/* Sidebar panel */}
+      {/* Desktop Sidebar panel */}
       <aside
         className={cn(
-          "fixed top-0 left-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-200/80 dark:border-slate-800 z-40 transition-all duration-300 flex flex-col",
-          "lg:translate-x-0",
-          mobileOpen ? "translate-x-0" : "-translate-x-full",
-          collapsed ? "lg:w-[var(--sidebar-collapsed-width)]" : "lg:w-[var(--sidebar-width)]",
-          "w-[var(--sidebar-width)]"
+          "hidden lg:flex fixed top-0 left-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-200/80 dark:border-slate-800 z-40 transition-all duration-300 flex-col",
+          collapsed ? "w-[var(--sidebar-collapsed-width)]" : "w-[var(--sidebar-width)]"
         )}
       >
         <SidebarContent />
