@@ -1,12 +1,22 @@
 'use client';
 
 import { useAuth } from '@/context/AuthContext';
-import { Bell, Search, Sun, Moon } from 'lucide-react';
+import { Bell, Search, Sun, Moon, LogOut, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { getInitials } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function Topbar() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const router = useRouter();
   const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
@@ -16,6 +26,11 @@ export default function Topbar() {
   const toggleDarkMode = () => {
     document.documentElement.classList.toggle('dark');
     setDarkMode(!darkMode);
+  };
+
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
   };
 
   return (
@@ -48,17 +63,37 @@ export default function Topbar() {
 
         <div className="h-7 w-px bg-slate-200 dark:bg-slate-700 mx-2" />
 
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:block text-right">
-            <p className="text-[13px] font-semibold text-slate-800 dark:text-slate-200 leading-tight">
-              {user?.firstName} {user?.lastName}
-            </p>
-            <p className="text-[11px] text-slate-400 dark:text-slate-500 leading-tight">{user?.email}</p>
-          </div>
-          <div className="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br from-accent to-indigo-600 text-white text-xs font-bold shadow-sm ring-2 ring-white dark:ring-slate-900">
-            {getInitials(user?.firstName, user?.lastName)}
-          </div>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger className="flex items-center gap-3 outline-none cursor-pointer">
+            <div className="hidden sm:block text-right">
+              <p className="text-[13px] font-semibold text-slate-800 dark:text-slate-200 leading-tight">
+                {user?.firstName} {user?.lastName}
+              </p>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 leading-tight">{user?.email}</p>
+            </div>
+            <div className="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br from-accent to-indigo-600 text-white text-xs font-bold shadow-sm ring-2 ring-white dark:ring-slate-900 transition-transform hover:scale-105">
+              {getInitials(user?.firstName, user?.lastName)}
+            </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56 mt-2">
+            <DropdownMenuLabel className="font-normal">
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">{user?.firstName} {user?.lastName}</p>
+                <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/dashboard/profile')}>
+              <User className="mr-2 h-4 w-4" />
+              <span>Profil</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="cursor-pointer text-red-600 dark:text-red-400" onClick={handleLogout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Déconnexion</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );

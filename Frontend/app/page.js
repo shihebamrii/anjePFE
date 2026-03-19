@@ -7,12 +7,25 @@ import {
   ArrowRight, BookOpen, Calendar, ChevronRight, Sparkles, 
   Zap, Shield, CheckCircle2, Globe, Star, MessageSquare,
   HelpCircle, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin,
-  Search, FileText, LayoutGrid, Info, ExternalLink, ArrowUpRight
+  Search, FileText, LayoutGrid, Info, ExternalLink, ArrowUpRight, Menu
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { newsService } from '@/services/newsService';
+import { eventService } from '@/services/eventService';
+import { departmentService } from '@/services/departmentService';
 
 export default function HomePage() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [newsList, setNewsList] = useState([]);
+  const [eventsList, setEventsList] = useState([]);
+  const [departmentsList, setDepartmentsList] = useState([]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,6 +35,24 @@ export default function HomePage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [fetchedNews, fetchedEvents, fetchedDeps] = await Promise.all([
+          newsService.getNews().catch(() => []),
+          eventService.getEvents().catch(() => []),
+          departmentService.getAllDepartments().catch(() => [])
+        ]);
+        setNewsList(fetchedNews || []);
+        setEventsList(fetchedEvents || []);
+        setDepartmentsList(fetchedDeps || []);
+      } catch (error) {
+        console.error('Error fetching homepage data:', error);
+      }
+    };
+    fetchData();
+  }, []);
+
   const stats = [
     { label: 'Étudiants', value: '2,800+', desc: 'Inscrits pour 2023/2024' },
     { label: 'Enseignants', value: '145+', desc: 'Experts Permanents' },
@@ -29,7 +60,7 @@ export default function HomePage() {
     { label: 'Clubs', value: '12+', desc: 'Vie Estudiantine active' },
   ];
 
-  const departments = [
+  const defaultDepartments = [
     { name: 'Informatique', code: 'TI', icon: LayoutGrid },
     { name: 'Génie Électrique', code: 'GE', icon: Zap },
     { name: 'Génie Mécanique', code: 'GM', icon: Shield },
@@ -37,6 +68,27 @@ export default function HomePage() {
     { name: 'Génie des Procédés', code: 'GP', icon: Globe },
     { name: 'Gestion des Entreprises', code: 'SEG', icon: Users },
   ];
+
+  const getDeptIcon = (name) => {
+    const fallback = LayoutGrid;
+    if (!name) return fallback;
+    const lName = name.toLowerCase();
+    if (lName.includes('informatique')) return LayoutGrid;
+    if (lName.includes('électrique')) return Zap;
+    if (lName.includes('mécanique')) return Shield;
+    if (lName.includes('civil')) return Building2;
+    if (lName.includes('procédés')) return Globe;
+    if (lName.includes('gestion') || lName.includes('économie')) return Users;
+    return fallback;
+  };
+
+  const displayDepartments = departmentsList.length > 0
+    ? departmentsList.map(d => ({
+        ...d,
+        code: d.name.split(' ').map(w => w[0]).join('').substring(0, 3).toUpperCase(),
+        icon: getDeptIcon(d.name)
+      }))
+    : defaultDepartments;
 
   const quickServices = [
     { title: 'Inscription en ligne', icon: ArrowUpRight, desc: 'Portail de pré-inscription' },
@@ -99,11 +151,48 @@ export default function HomePage() {
               <Search size={14} />
               <span className="text-[10px] font-bold uppercase tracking-widest">Rechercher</span>
             </div>
-            <Link href="/login">
+            <Link href="/login" className="hidden sm:block">
               <Button className="bg-brand hover:brightness-110 text-white rounded-lg px-6 h-10 text-[10px] font-black uppercase tracking-widest shadow-lg shadow-brand/10">
                 Accès Extranet
               </Button>
             </Link>
+
+            {/* Mobile Menu */}
+            <div className="lg:hidden flex items-center">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className={isScrolled ? "text-slate-600" : "text-brand md:text-slate-600"}>
+                    <Menu className="h-6 w-6" />
+                    <span className="sr-only">Toggle navigation menu</span>
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[85vw] max-w-[400px] p-8 flex flex-col">
+                  <SheetHeader className="mb-10 text-left">
+                    <SheetTitle className="font-black text-2xl text-brand uppercase tracking-tight flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-brand/5 flex items-center justify-center text-accent">
+                        <Building2 size={22} />
+                      </div>
+                      ISET Gafsa
+                    </SheetTitle>
+                  </SheetHeader>
+                  <div className="flex flex-col gap-6 flex-1 mt-4">
+                    {['Institut', 'Départements', 'Formation', 'Manifestations', 'Entreprise'].map((item) => (
+                      <button key={item} className="text-left text-base font-black uppercase tracking-widest text-slate-500 hover:text-accent hover:translate-x-2 transition-all duration-300">
+                        {item}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="mt-auto pt-8 border-t border-slate-100 dark:border-slate-800 w-full">
+                    <Link href="/login" className="w-full block">
+                      <Button className="w-full bg-brand hover:brightness-110 text-white rounded-xl h-14 text-[11px] font-black uppercase tracking-widest shadow-lg shadow-brand/10 group">
+                        Accès Extranet
+                        <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
+                      </Button>
+                    </Link>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
         </div>
       </nav>
@@ -277,21 +366,29 @@ export default function HomePage() {
               </div>
 
               <div className="grid gap-12">
-                {[
-                  { tag: "AVIS AUX ETUDIANTS", title: "Calendrier des examens du second semestre 2023-2024", date: "09 Mars 2024", desc: "La direction des études communique le planning détaillé des épreuves..." },
-                  { tag: "PLAQUETTE PÉDAGOGIQUE", title: "Mise à jour des programmes Licence TI (L1 & L2)", date: "05 Mars 2024", desc: "Consultation des nouveaux modules optionnels pour le semestre prochain." },
-                  { tag: "COMMUNIQUÉ", title: "Ouverture des candidatures pour le Mastère Professionnel", date: "01 Mars 2024", desc: "L&apos;ISET Gafsa annonce l&apos;ouverture des inscriptions pour les parcours de mastère." }
-                ].map((news, i) => (
-                  <div key={news.title} className="group cursor-pointer">
-                    <div className="flex gap-4 items-center mb-4">
-                      <span className="text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1 bg-accent/10 text-accent rounded-full">{news.tag}</span>
-                      <span className="text-[10px] text-slate-400 font-bold">{news.date}</span>
+                {newsList.length > 0 ? (
+                  newsList.slice(0, 3).map((news) => (
+                    <div key={news._id} className="group cursor-pointer">
+                      <div className="flex gap-4 items-center mb-4">
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1 bg-accent/10 text-accent rounded-full">
+                          {news.category || 'NOUVELLE'}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-bold">
+                          {new Date(news.createdAt).toLocaleDateString('fr-FR', {
+                            day: '2-digit',
+                            month: 'long',
+                            year: 'numeric'
+                          })}
+                        </span>
+                      </div>
+                      <h3 className="text-xl font-black text-brand dark:text-white group-hover:text-accent transition-colors mb-4">{news.title}</h3>
+                      <p className="text-slate-500 text-sm leading-relaxed mb-6">{news.excerpt || (news.content ? news.content.substring(0, 100) + '...' : '')}</p>
+                      <div className="w-full h-px bg-slate-100" />
                     </div>
-                    <h3 className="text-xl font-black text-brand dark:text-white group-hover:text-accent transition-colors mb-4">{news.title}</h3>
-                    <p className="text-slate-500 text-sm leading-relaxed mb-6">{news.desc}</p>
-                    <div className="w-full h-px bg-slate-100" />
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <div className="text-slate-500 text-sm font-medium py-8">Aucune actualité disponible pour le moment.</div>
+                )}
               </div>
               
               <Button variant="ghost" className="mt-12 text-accent font-black uppercase tracking-widest text-[10px] p-0 hover:bg-transparent hover:gap-3 transition-all">
@@ -310,22 +407,28 @@ export default function HomePage() {
                 </div>
 
                 <div className="space-y-10">
-                  {[
-                    { day: "15", month: "MAR", title: "Journée Portes Ouvertes 4C", type: "Carrière" },
-                    { day: "22", month: "AVR", title: "Séminaire Cybersécurité", type: "Conférence" },
-                    { day: "05", month: "MAI", title: "Manifestation Culturelle", type: "Club" }
-                  ].map((event, i) => (
-                    <div key={i} className="flex gap-8 group cursor-pointer border-b border-white/5 pb-8 last:border-0 last:pb-0">
-                      <div className="flex flex-col items-center shrink-0">
-                        <span className="text-3xl font-black text-accent leading-none mb-1">{event.day}</span>
-                        <span className="text-[10px] font-black opacity-30 uppercase tracking-[0.2em]">{event.month}</span>
-                      </div>
-                      <div>
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-accent/60 mb-2 block">{event.type}</span>
-                        <h4 className="font-bold text-base group-hover:text-accent transition-colors leading-snug">{event.title}</h4>
-                      </div>
-                    </div>
-                  ))}
+                  {eventsList.length > 0 ? (
+                    eventsList.slice(0, 3).map((event) => {
+                      const eventDate = new Date(event.startDate);
+                      const day = eventDate.toLocaleDateString('fr-FR', { day: '2-digit' });
+                      const month = eventDate.toLocaleDateString('fr-FR', { month: 'short' }).toUpperCase();
+
+                      return (
+                        <div key={event._id} className="flex gap-8 group cursor-pointer border-b border-white/5 pb-8 last:border-0 last:pb-0">
+                          <div className="flex flex-col items-center shrink-0 w-12">
+                            <span className="text-3xl font-black text-accent leading-none mb-1">{day}</span>
+                            <span className="text-[10px] font-black opacity-30 uppercase tracking-[0.2em]">{month}</span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-accent/60 mb-2 block">{event.type || 'Événement'}</span>
+                            <h4 className="font-bold text-base group-hover:text-accent transition-colors leading-snug">{event.title}</h4>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="text-white/50 text-sm font-medium py-4">Aucun événement à venir.</div>
+                  )}
                 </div>
 
                 <Button className="w-full mt-12 bg-white/10 hover:bg-white text-brand border-0 rounded-2xl h-14 text-xs font-black uppercase tracking-widest transition-all">
@@ -364,22 +467,25 @@ export default function HomePage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-white/5 border border-white/5 rounded-[2rem] overflow-hidden shadow-2xl">
-            {departments.map((dept, i) => (
-              <div key={i} className="group bg-brand p-16 hover:bg-slate-900/50 transition-all duration-700 cursor-pointer border-white/5 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                <div className="flex justify-between items-start mb-16 relative z-10">
-                  <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-white/10 group-hover:text-accent group-hover:bg-accent/10 transition-all duration-500">
-                    <dept.icon size={32} />
+            {displayDepartments.map((dept, i) => {
+              const Icon = dept.icon || LayoutGrid;
+              return (
+                <div key={dept._id || i} className="group bg-brand p-16 hover:bg-slate-900/50 transition-all duration-700 cursor-pointer border-white/5 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="flex justify-between items-start mb-16 relative z-10">
+                    <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-white/10 group-hover:text-accent group-hover:bg-accent/10 transition-all duration-500">
+                      <Icon size={32} />
+                    </div>
+                    <span className="text-xs font-black text-white/10 tracking-widest group-hover:text-white transition-colors uppercase">{dept.code}</span>
                   </div>
-                  <span className="text-xs font-black text-white/10 tracking-widest group-hover:text-white transition-colors uppercase">{dept.code}</span>
+                  <h3 className="text-3xl font-black uppercase tracking-tight mb-6 relative z-10">{dept.name}</h3>
+                  <div className="flex items-center gap-3 text-accent opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all duration-500 relative z-10">
+                    <span className="text-xs font-black uppercase tracking-widest">Voir Parcours</span>
+                    <ArrowRight size={16} />
+                  </div>
                 </div>
-                <h3 className="text-3xl font-black uppercase tracking-tight mb-6 relative z-10">{dept.name}</h3>
-                <div className="flex items-center gap-3 text-accent opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all duration-500 relative z-10">
-                  <span className="text-xs font-black uppercase tracking-widest">Voir Parcours</span>
-                  <ArrowRight size={16} />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

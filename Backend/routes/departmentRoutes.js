@@ -17,7 +17,7 @@ const router = express.Router();
 
 // /my must come before /:id to avoid treating "my" as an ObjectId
 router.get('/my', protect, getMyDepartment);
-router.get('/', protect, getDepartments);
+router.get('/', getDepartments); // public access for homepage
 router.get('/:id', protect, getDepartment);
 
 // Teacher CRUD (chef only)
