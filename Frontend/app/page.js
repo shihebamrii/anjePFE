@@ -166,23 +166,27 @@ export default function HomePage() {
                     <span className="sr-only">Toggle navigation menu</span>
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-                  <SheetHeader>
-                    <SheetTitle className="text-left font-black text-brand uppercase tracking-tight flex items-center gap-2">
-                      <Building2 size={20} className="text-accent" />
+                <SheetContent side="right" className="w-[85vw] max-w-[400px] p-8 flex flex-col">
+                  <SheetHeader className="mb-10 text-left">
+                    <SheetTitle className="font-black text-2xl text-brand uppercase tracking-tight flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-brand/5 flex items-center justify-center text-accent">
+                        <Building2 size={22} />
+                      </div>
                       ISET Gafsa
                     </SheetTitle>
                   </SheetHeader>
-                  <div className="flex flex-col gap-6 mt-12">
+                  <div className="flex flex-col gap-6 flex-1 mt-4">
                     {['Institut', 'Départements', 'Formation', 'Manifestations', 'Entreprise'].map((item) => (
-                      <button key={item} className="text-left text-sm font-black uppercase tracking-widest text-slate-600 hover:text-accent transition-colors">
+                      <button key={item} className="text-left text-base font-black uppercase tracking-widest text-slate-500 hover:text-accent hover:translate-x-2 transition-all duration-300">
                         {item}
                       </button>
                     ))}
-                    <div className="h-px w-full bg-slate-100 my-4" />
-                    <Link href="/login" className="w-full">
-                      <Button className="w-full bg-brand hover:brightness-110 text-white rounded-lg h-12 text-xs font-black uppercase tracking-widest shadow-lg shadow-brand/10">
+                  </div>
+                  <div className="mt-auto pt-8 border-t border-slate-100 dark:border-slate-800 w-full">
+                    <Link href="/login" className="w-full block">
+                      <Button className="w-full bg-brand hover:brightness-110 text-white rounded-xl h-14 text-[11px] font-black uppercase tracking-widest shadow-lg shadow-brand/10 group">
                         Accès Extranet
+                        <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
                       </Button>
                     </Link>
                   </div>
