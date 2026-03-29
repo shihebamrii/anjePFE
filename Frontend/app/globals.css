@@ -15,6 +15,9 @@
   --color-ui-accent: #3b82f6;
   --color-ui-accent-light: #60a5fa;
   --color-ui-accent-dark: #2563eb;
+  --color-gold: #C9A84C;
+  --color-gold-light: #E2C97E;
+  --color-gold-dark: #A8893A;
   --color-surface: #f8fafc;
   --color-surface-card: #ffffff;
   --color-surface-elevated: #ffffff;
@@ -23,6 +26,8 @@
 
   --font-family-sans:
     "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-family-serif:
+    "Playfair Display", "Georgia", "Times New Roman", serif;
 
   --shadow-glass: 0 8px 32px rgba(15, 27, 45, 0.1);
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04), 0 6px 16px rgba(0, 0, 0, 0.04);
@@ -32,6 +37,8 @@
     0 12px 40px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
   --shadow-button:
     0 1px 2px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(59, 130, 246, 0.18);
+  --shadow-hero:
+    0 24px 80px rgba(0, 0, 0, 0.4);
 
   --animate-fade-in: fade-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-slide-up: slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -40,6 +47,8 @@
   --animate-pulse-soft: pulse-soft 2.4s ease-in-out infinite;
   --animate-shimmer: shimmer 1.8s linear infinite;
   --animate-float: float 6s ease-in-out infinite;
+  --animate-count-up: count-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-hero-zoom: hero-zoom 25s ease-in-out infinite alternate;
 }
 
 /* ===== Keyframes ===== */
@@ -114,11 +123,69 @@
     transform: rotate(360deg);
   }
 }
+@keyframes hero-zoom {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.08);
+  }
+}
+@keyframes count-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes ken-burns {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+  50% {
+    transform: scale(1.06) translate(-1%, -1%);
+  }
+  100% {
+    transform: scale(1) translate(0, 0);
+  }
+}
+
+/* ===== Serif heading utility ===== */
+.font-serif {
+  font-family: var(--font-family-serif);
+}
+
+/* ===== Hero cinematic overlay ===== */
+.hero-overlay {
+  background: linear-gradient(
+    to right,
+    rgba(15, 27, 45, 0.92) 0%,
+    rgba(15, 27, 45, 0.75) 40%,
+    rgba(15, 27, 45, 0.45) 70%,
+    rgba(15, 27, 45, 0.2) 100%
+  );
+}
+.hero-overlay-bottom {
+  background: linear-gradient(
+    to top,
+    rgba(15, 27, 45, 0.95) 0%,
+    transparent 100%
+  );
+}
+
+/* ===== Ken Burns for hero image ===== */
+.ken-burns {
+  animation: ken-burns 30s ease-in-out infinite;
+}
 
 /* ===== Custom properties for non-tailwind usage ===== */
 :root {
   --sidebar-width: 272px;
   --sidebar-collapsed-width: 72px;
+  --sidebar-current-width: var(--sidebar-width);
   --topbar-height: 64px;
   --radius: 0.625rem;
   --background: oklch(1 0 0);

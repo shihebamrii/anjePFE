@@ -30,7 +30,7 @@ export default function DashboardLayout({ children }) {
   return (
     <div className="min-h-screen bg-surface dark:bg-slate-950">
       <Sidebar />
-      <div className="lg:ml-[var(--sidebar-width)] transition-all duration-300 min-h-screen">
+      <div className="lg:ml-[var(--sidebar-current-width)] transition-all duration-300 min-h-screen">
         <Topbar />
         <main className="p-5 md:p-8 max-w-[1360px] mx-auto">
           <div className="animate-fade-in">
