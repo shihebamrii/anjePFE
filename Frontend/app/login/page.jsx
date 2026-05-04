@@ -14,7 +14,7 @@ import {
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,10 +22,17 @@ export default function LoginPage() {
 
   // Handle redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated) {
-      router.push('/dashboard/student');
+    if (isAuthenticated && user) {
+      const routes = {
+        ADMIN: '/dashboard/admin',
+        TEACHER: '/dashboard/teacher',
+        STUDENT: '/dashboard/student',
+        PARTNER: '/dashboard/partner',
+        CHEF_DEPT: '/dashboard/chef',
+      };
+      router.push(routes[user.role] || '/dashboard/student');
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, user, router]);
 
   // Form validation based on backend schema
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
@@ -246,26 +253,7 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            {/* Divider */}
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-slate-500">Ou continuer avec</span>
-              </div>
-            </div>
 
-            {/* Register Link */}
-            <div className="text-center text-sm">
-              Non inscrit ?{' '}
-              <Link
-                href="/register"
-                className="font-medium text-primary hover:underline"
-              >
-                Créer un compte
-              </Link>
-            </div>
           </div>
 
           {/* Footer */}

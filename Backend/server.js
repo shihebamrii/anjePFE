@@ -13,6 +13,7 @@ import departmentRoutes from './routes/departmentRoutes.js';
 import academicRoutes from './routes/academicRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
 import complaintRoutes from './routes/complaintRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import jwt from 'jsonwebtoken';
@@ -57,6 +58,7 @@ app.use('/api/departments', departmentRoutes);
 app.use('/api/academic', academicRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/complaints', complaintRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Socket.io Middleware for Authentication
 io.use(async (socket, next) => {

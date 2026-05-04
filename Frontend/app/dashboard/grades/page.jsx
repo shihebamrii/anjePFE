@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,7 +9,8 @@ import { Input } from '@/components/ui/input';
 import { LoadingPage } from '@/components/ui/loading';
 import { gradeService } from '@/services/gradeService';
 import { complaintService } from '@/services/complaintService';
-import { userService } from '@/services/userService';
+import { academicService } from '@/services/academicService';
+import { attendanceService } from '@/services/attendanceService';
 import { calculateAverage, getGradeColor, formatDate } from '@/lib/utils';
 import { GraduationCap, Plus, Trash2, TrendingUp, X, Upload, Download, FileSpreadsheet, AlertCircle, CheckCircle2, AlertTriangle } from 'lucide-react';
 import * as XLSX from 'xlsx';
@@ -17,18 +18,23 @@ import * as XLSX from 'xlsx';
 export default function GradesPage() {
   const { user, isStudent, isTeacher, isAdmin } = useAuth();
   const [grades, setGrades] = useState([]);
+  const [teacherCourses, setTeacherCourses] = useState([]);
+  const [selectedClass, setSelectedClass] = useState('');
+  const [selectedCourse, setSelectedCourse] = useState('');
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [semesterFilter, setSemesterFilter] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
-    student: '', courseName: '', department: '', subject: '', score: '', coefficient: '1', semester: 'S1', type: 'DS', notes: ''
+    courseName: '', department: '', coefficient: '1', semester: 'S1', type: 'DS'
   });
+  const [studentScores, setStudentScores] = useState({});
+  const [addingGrades, setAddingGrades] = useState(false);
 
   // Bulk import state
   const [showImportModal, setShowImportModal] = useState(false);
   const [importData, setImportData] = useState({
-    courseName: '', department: '', subject: '', semester: 'S1', type: 'DS', coefficient: '1'
+    courseName: '', department: '', semester: 'S1', type: 'DS', coefficient: '1'
   });
   const [parsedRows, setParsedRows] = useState([]);
   const [importFile, setImportFile] = useState(null);
@@ -44,27 +50,85 @@ export default function GradesPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const g = await gradeService.getGrades(semesterFilter);
+        const [g, courses] = await Promise.all([
+          gradeService.getGrades(semesterFilter),
+          (isTeacher || isAdmin) ? academicService.getTeacherCourses().catch(() => []) : Promise.resolve([])
+        ]);
         setGrades(g);
-        if (isTeacher || isAdmin) {
-          const s = await userService.getUsers('STUDENT').catch(() => []);
-          setStudents(s);
-        }
+        setTeacherCourses(courses);
       } catch (err) { console.error(err); }
       finally { setLoading(false); }
     }
     fetchData();
   }, [semesterFilter, isTeacher, isAdmin]);
 
-  const handleAddGrade = async (e) => {
+  const classNames = useMemo(() => {
+    const names = new Set(teacherCourses.map(c => c.className));
+    return Array.from(names).sort();
+  }, [teacherCourses]);
+
+  const coursesForClass = useMemo(() => {
+    if (!selectedClass) return [];
+    const courseNames = new Set();
+    return teacherCourses
+      .filter(c => c.className === selectedClass)
+      .filter(c => {
+        if (courseNames.has(c.courseName)) return false;
+        courseNames.add(c.courseName);
+        return true;
+      });
+  }, [teacherCourses, selectedClass]);
+
+  useEffect(() => {
+    if (!selectedClass) {
+      setStudents([]);
+      setStudentScores({});
+      return;
+    }
+    async function fetchStudents() {
+      try {
+        const s = await attendanceService.getStudentsByClass(selectedClass);
+        setStudents(s);
+        const scores = {};
+        s.forEach(student => { scores[student._id] = ''; });
+        setStudentScores(scores);
+      } catch (err) { console.error(err); setStudents([]); }
+    }
+    fetchStudents();
+  }, [selectedClass]);
+
+  useEffect(() => {
+    if (coursesForClass.length > 0) {
+      const courseName = coursesForClass[0].courseName;
+      setSelectedCourse(courseName);
+      setFormData(prev => ({ ...prev, courseName, department: coursesForClass[0].department || '' }));
+    } else {
+      setSelectedCourse('');
+      setFormData(prev => ({ ...prev, courseName: '', department: '' }));
+    }
+  }, [coursesForClass]);
+
+  const handleAddGradesList = async (e) => {
     e.preventDefault();
+    setAddingGrades(true);
     try {
-      await gradeService.addGrade({ ...formData, score: Number(formData.score), coefficient: Number(formData.coefficient) });
+      const promises = Object.entries(studentScores).map(([studentId, score]) => {
+         if (score === '' || score === undefined) return Promise.resolve();
+         return gradeService.addGrade({ 
+           ...formData, 
+           student: studentId, 
+           score: Number(score), 
+           coefficient: Number(formData.coefficient) 
+         });
+      });
+      await Promise.all(promises);
       const g = await gradeService.getGrades(semesterFilter);
       setGrades(g);
       setShowForm(false);
-      setFormData({ student: '', courseName: '', department: '', subject: '', score: '', coefficient: '1', semester: 'S1', type: 'DS', notes: '' });
+      setFormData({ courseName: '', department: '', coefficient: '1', semester: 'S1', type: 'DS' });
+      setStudentScores({});
     } catch (err) { console.error(err); }
+    finally { setAddingGrades(false); }
   };
 
   const handleDelete = async (id) => {
@@ -140,7 +204,6 @@ export default function GradesPage() {
       formData.append('file', importFile);
       formData.append('courseName', importData.courseName);
       formData.append('department', importData.department);
-      formData.append('subject', importData.subject);
       formData.append('semester', importData.semester);
       formData.append('type', importData.type);
       formData.append('coefficient', importData.coefficient);
@@ -164,7 +227,7 @@ export default function GradesPage() {
     setParsedRows([]);
     setImportFile(null);
     setImportResult(null);
-    setImportData({ courseName: '', department: '', subject: '', semester: 'S1', type: 'DS', coefficient: '1' });
+    setImportData({ courseName: '', department: '', semester: 'S1', type: 'DS', coefficient: '1' });
   };
 
   if (loading) return <LoadingPage />;
@@ -172,7 +235,7 @@ export default function GradesPage() {
   const avg = calculateAverage(grades);
   const validRows = parsedRows.filter(r => r._valid).length;
   const invalidRows = parsedRows.filter(r => !r._valid).length;
-  const canSubmit = importFile && importData.courseName && importData.department && importData.subject && validRows > 0;
+  const canSubmit = importFile && importData.courseName && importData.department && validRows > 0;
 
   return (
     <div className="space-y-6">
@@ -226,33 +289,59 @@ export default function GradesPage() {
         <Card className="animate-scale-in border-2 border-accent">
           <CardHeader className="pb-3"><CardTitle className="text-[15px]">Nouvelle Note</CardTitle></CardHeader>
           <CardContent>
-            <form onSubmit={handleAddGrade} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <select value={formData.student} onChange={(e) => setFormData({ ...formData, student: e.target.value })}
-                className="h-11 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-800 dark:text-slate-200 shadow-sm" required>
-                <option value="">Sélectionner étudiant</option>
-                {students.map(s => <option key={s._id} value={s._id}>{s.firstName} {s.lastName}</option>)}
-              </select>
-              <Input placeholder="Matière" value={formData.courseName} onChange={(e) => setFormData({ ...formData, courseName: e.target.value })} required />
-              <Input placeholder="Département" value={formData.department} onChange={(e) => setFormData({ ...formData, department: e.target.value })} required />
-              <Input placeholder="Sujet" value={formData.subject} onChange={(e) => setFormData({ ...formData, subject: e.target.value })} required />
-              <Input type="number" placeholder="Note (0-20)" min="0" max="20" step="0.5" value={formData.score} onChange={(e) => setFormData({ ...formData, score: e.target.value })} required />
-              <Input type="number" placeholder="Coefficient" min="0.5" step="0.5" value={formData.coefficient} onChange={(e) => setFormData({ ...formData, coefficient: e.target.value })} required />
-              <select value={formData.semester} onChange={(e) => setFormData({ ...formData, semester: e.target.value })}
-                className="h-11 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-800 dark:text-slate-200 shadow-sm">
-                <option value="S1">Semestre 1</option>
-                <option value="S2">Semestre 2</option>
-              </select>
-              <select value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                className="h-11 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-800 dark:text-slate-200 shadow-sm">
-                <option value="DS">DS</option>
-                <option value="EXAM">Examen</option>
-                <option value="TP">TP</option>
-                <option value="TD">TD</option>
-                <option value="PROJECT">Projet</option>
-              </select>
-              <Input placeholder="Remarques (optionnel)" value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
-              <div className="md:col-span-2 lg:col-span-3">
-                <Button type="submit" variant="accent" className="w-full sm:w-auto">Enregistrer la note</Button>
+            <form onSubmit={handleAddGradesList} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)}
+                  className="w-full h-11 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 text-sm font-medium text-slate-700 dark:text-slate-200 shadow-sm">
+                  <option value="">— Choisir une classe —</option>
+                  {classNames.map(name => <option key={name} value={name}>{name}</option>)}
+                </select>
+                <select value={selectedCourse} onChange={e => {
+                    setSelectedCourse(e.target.value);
+                    const c = coursesForClass.find(x => x.courseName === e.target.value);
+                    setFormData(prev => ({ ...prev, courseName: e.target.value, department: c?.department || prev.department }));
+                  }}
+                  className="w-full h-11 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 text-sm font-medium text-slate-700 dark:text-slate-200 shadow-sm"
+                  disabled={!selectedClass}>
+                  <option value="">— Choisir un cours —</option>
+                  {coursesForClass.map((c, i) => <option key={i} value={c.courseName}>{c.courseName}</option>)}
+                </select>
+                <Input type="number" placeholder="Coefficient" min="0.5" step="0.5" value={formData.coefficient} onChange={(e) => setFormData({ ...formData, coefficient: e.target.value })} required />
+                <select value={formData.semester} onChange={(e) => setFormData({ ...formData, semester: e.target.value })}
+                  className="h-11 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-800 dark:text-slate-200 shadow-sm">
+                  <option value="S1">Semestre 1</option>
+                  <option value="S2">Semestre 2</option>
+                </select>
+                <select value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                  className="h-11 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-800 dark:text-slate-200 shadow-sm">
+                  <option value="DS">DS</option>
+                  <option value="EXAM">Examen</option>
+                  <option value="TP">TP</option>
+                  <option value="TD">TD</option>
+                  <option value="PROJECT">Projet</option>
+                </select>
+              </div>
+              
+              <div>
+                <h3 className="font-semibold text-sm text-slate-700 dark:text-slate-300 mb-3 border-b pb-2">Liste des étudiants</h3>
+                <div className="space-y-2 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
+                  {students.map(s => (
+                    <div key={s._id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                      <span className="text-sm font-medium text-slate-800 dark:text-slate-200">{s.firstName} {s.lastName}</span>
+                      <Input type="number" placeholder="Note (0-20)" min="0" max="20" step="0.25" className="w-32 h-9"
+                        value={studentScores[s._id] !== undefined ? studentScores[s._id] : ''}
+                        onChange={(e) => setStudentScores(prev => ({...prev, [s._id]: e.target.value}))}
+                      />
+                    </div>
+                  ))}
+                  {students.length === 0 && <p className="text-sm text-slate-400 py-4 text-center">Aucun étudiant trouvé.</p>}
+                </div>
+              </div>
+
+              <div>
+                <Button type="submit" variant="accent" className="w-full sm:w-auto gap-2" disabled={addingGrades || students.length === 0}>
+                  {addingGrades ? 'Enregistrement...' : 'Enregistrer les notes'}
+                </Button>
               </div>
             </form>
           </CardContent>
@@ -289,7 +378,6 @@ export default function GradesPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   <Input placeholder="Matière *" value={importData.courseName} onChange={(e) => setImportData({ ...importData, courseName: e.target.value })} />
                   <Input placeholder="Département *" value={importData.department} onChange={(e) => setImportData({ ...importData, department: e.target.value })} />
-                  <Input placeholder="Sujet *" value={importData.subject} onChange={(e) => setImportData({ ...importData, subject: e.target.value })} />
                   <select value={importData.semester} onChange={(e) => setImportData({ ...importData, semester: e.target.value })}
                     className="h-11 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-800 dark:text-slate-200 shadow-sm">
                     <option value="S1">Semestre 1</option>
@@ -453,7 +541,6 @@ export default function GradesPage() {
                     )}
                     <td className="p-4">
                       <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{grade.courseName}</p>
-                      <p className="text-[11px] text-slate-400">{grade.subject}</p>
                     </td>
                     <td className="p-4"><Badge variant="secondary" className="text-[10px]">{grade.type}</Badge></td>
                     <td className="p-4">

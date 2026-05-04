@@ -3,6 +3,12 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
+
+const MapComponent = dynamic(() => import('@/components/home/MapComponent'), {
+  ssr: false,
+  loading: () => <div className="w-full h-full bg-slate-100 animate-pulse rounded-2xl flex items-center justify-center text-slate-400 font-bold">Chargement de la carte...</div>
+});
 import {
   Building2, GraduationCap, Users, Briefcase, Newspaper,
   ArrowRight, BookOpen, Calendar, ChevronRight, Sparkles,
@@ -898,6 +904,27 @@ export default function HomePage() {
             </Button>
           </div>
         </div>
+      </section>
+
+      {/* ═══════════ LOCATION MAP ═══════════ */}
+      <section className="py-20 bg-slate-50 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-3 mb-4">
+              <div className="w-8 h-[1.5px] bg-brand" />
+              <span className="text-brand text-[10px] font-bold uppercase tracking-[0.3em]">Notre Emplacement</span>
+              <div className="w-8 h-[1.5px] bg-brand" />
+            </div>
+            <h2 className="font-serif text-3xl sm:text-4xl text-brand mb-4">Plan du Campus</h2>
+            <p className="text-slate-500 text-sm sm:text-base max-w-xl mx-auto">Retrouvez la direction et tous les départements de l&apos;ISET Gafsa sur notre carte interactive.</p>
+          </div>
+          
+          <div className="w-full h-[500px] sm:h-[600px]">
+            <MapComponent />
+          </div>
+        </div>
+        <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
       </section>
 
       {/* ═══════════ FOOTER ═══════════ */}

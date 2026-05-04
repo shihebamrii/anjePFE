@@ -25,7 +25,7 @@ const TYPE_LABELS = {
 
 export default function EventsPage() {
   const { user } = useAuth();
-  const isChef = user?.role === 'CHEF_DEPT';
+  const isChef = user?.role === 'CHEF_DEPT' || user?.role === 'TEACHER';
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState('');

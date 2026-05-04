@@ -19,12 +19,12 @@ import {
 const navItems = {
   ADMIN: [
     { href: '/dashboard/admin', label: 'Tableau de bord', icon: LayoutDashboard },
-    { href: '/dashboard/grades', label: 'Notes', icon: GraduationCap },
-    { href: '/dashboard/attendance', label: 'Présences', icon: ClipboardCheck },
+    { href: '/dashboard/admin/chefs', label: 'Chefs de Dép.', icon: Building2 },
+    { href: '/dashboard/admin/teachers', label: 'Enseignants', icon: GraduationCap },
+    { href: '/dashboard/admin/students', label: 'Étudiants', icon: Users },
     { href: '/dashboard/news', label: 'Actualités', icon: Newspaper },
     { href: '/dashboard/events', label: 'Événements', icon: Calendar },
     { href: '/dashboard/stages', label: 'Stages', icon: Briefcase },
-    { href: '/dashboard/users', label: 'Utilisateurs', icon: Users },
     { href: '/dashboard/chat', label: 'Messagerie', icon: MessageSquare },
     { href: '/dashboard/profile', label: 'Profil', icon: User },
   ],
@@ -32,7 +32,7 @@ const navItems = {
     { href: '/dashboard/teacher', label: 'Tableau de bord', icon: LayoutDashboard },
     { href: '/dashboard/teacher/schedule', label: 'Mon Emploi', icon: CalendarDays },
     { href: '/dashboard/teacher/courses', label: 'Mes Cours', icon: BookOpen },
-    { href: '/dashboard/teacher/classes', label: 'Mes Classes', icon: School },
+
     { href: '/dashboard/grades', label: 'Notes', icon: GraduationCap },
     { href: '/dashboard/attendance', label: 'Présences', icon: ClipboardCheck },
     { href: '/dashboard/events', label: 'Événements', icon: Calendar },
@@ -61,7 +61,7 @@ const navItems = {
   CHEF_DEPT: [
     { href: '/dashboard/chef', label: 'Tableau de bord', icon: LayoutDashboard },
     { href: '/dashboard/chef/teachers', label: 'Mes Enseignants', icon: Users },
-    { href: '/dashboard/chef/classes', label: 'Mes Classes', icon: School },
+
     { href: '/dashboard/chef/students', label: 'Mes Étudiants', icon: Users },
     { href: '/dashboard/chef/courses', label: 'Cours et Matières', icon: BookOpen },
     { href: '/dashboard/chef/schedule', label: 'Emploi du temps', icon: CalendarDays },

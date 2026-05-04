@@ -46,6 +46,12 @@ export const createEvent = async (req, res) => {
   try {
     const { title, description, startDate, endDate, type, location, audience } = req.body;
 
+    // audience arrives as a JSON string from FormData, parse it into an array
+    let parsedAudience = audience;
+    if (typeof audience === 'string') {
+      try { parsedAudience = JSON.parse(audience); } catch (e) { parsedAudience = [audience]; }
+    }
+
     const event = new Event({
       title,
       description,
@@ -53,7 +59,7 @@ export const createEvent = async (req, res) => {
       endDate,
       type,
       location,
-      audience,
+      audience: parsedAudience,
       organizer: req.user._id,
       image: req.files && req.files.image ? `/uploads/${req.files.image[0].filename}` : '',
       document: req.files && req.files.document ? `/uploads/${req.files.document[0].filename}` : '',

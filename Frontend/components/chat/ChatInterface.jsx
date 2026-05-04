@@ -19,6 +19,7 @@ export default function ChatInterface() {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [typing, setTyping] = useState(null);
+  const [roomSearch, setRoomSearch] = useState('');
   const scrollRef = useRef();
 
   // Initialize Socket
@@ -128,14 +129,24 @@ export default function ChatInterface() {
       {/* Sidebar - Rooms */}
       <div className="w-80 border-r border-slate-200 dark:border-slate-800 flex flex-col bg-slate-50/50 dark:bg-slate-900/50">
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-3">
             <MessageSquare size={20} className="text-primary" />
             Salons de discussion
           </h2>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+            <input
+              type="text"
+              placeholder="Rechercher un salon..."
+              value={roomSearch}
+              onChange={(e) => setRoomSearch(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-slate-800 text-sm rounded-lg border-none focus:ring-2 focus:ring-primary/20 transition-all dark:text-slate-200 dark:placeholder-slate-500"
+            />
+          </div>
         </div>
         
         <div className="flex-1 overflow-y-auto p-3 space-y-2">
-          {rooms.map((room) => (
+          {rooms.filter(room => room.name.toLowerCase().includes((roomSearch || '').toLowerCase())).map((room) => (
             <button
               key={room.id}
               onClick={() => joinRoom(room)}

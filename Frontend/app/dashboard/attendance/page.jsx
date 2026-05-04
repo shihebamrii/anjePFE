@@ -12,8 +12,10 @@ import { academicService } from '@/services/academicService';
 import { getStatusColor, formatDate, getAttendanceRate } from '@/lib/utils';
 import {
   ClipboardCheck, Trash2, Check, X, Clock, UserCheck,
-  Users, BookOpen, CalendarDays, ChevronRight, Search, AlertCircle, HelpCircle
+  Users, BookOpen, CalendarDays, ChevronRight, Search, AlertCircle, HelpCircle, Printer
 } from 'lucide-react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const STATUS_CONFIG = {
   PRESENT: { label: 'Présent', icon: Check, color: 'bg-emerald-500 text-white', ring: 'ring-emerald-200', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
@@ -290,6 +292,71 @@ export default function AttendancePage() {
   const [expandedGroups, setExpandedGroups] = useState({});
   const toggleGroup = (key) => setExpandedGroups(prev => ({ ...prev, [key]: !prev[key] }));
 
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text('Historique des Présences', 14, 22);
+    doc.setFontSize(11);
+    doc.text(`Date d'exportation: ${formatDate(new Date())}`, 14, 30);
+    
+    if (isStudent) {
+      const tableData = filteredRecords.map(r => [
+        r.courseName,
+        formatDate(r.date),
+        r.sessionType,
+        `${r.durationHours}h`,
+        STATUS_CONFIG[r.status]?.label || r.status
+      ]);
+      autoTable(doc, {
+        startY: 40,
+        head: [['Cours', 'Date', 'Session', 'Durée', 'Statut']],
+        body: tableData,
+      });
+      doc.save('mes_presences.pdf');
+    } else {
+      let yPos = 40;
+      if (groupedHistory.length === 0) {
+        doc.text("Aucun enregistrement trouvé.", 14, yPos);
+      } else {
+        groupedHistory.forEach((group, index) => {
+          // Check if we need a new page before drawing the group header
+          if (yPos > 260) {
+            doc.addPage();
+            yPos = 20;
+          }
+          
+          doc.setFontSize(12);
+          doc.setTextColor(40, 40, 40);
+          doc.text(`Séance : ${group.courseName} | Classe : ${group.className}`, 14, yPos);
+          yPos += 6;
+          doc.setFontSize(10);
+          doc.setTextColor(100, 100, 100);
+          doc.text(`Date : ${group.dateStr} | Type : ${group.sessionType} | Durée : ${group.durationHours}h`, 14, yPos);
+          yPos += 6;
+          doc.text(`Présents: ${group.stats.PRESENT} | Absents: ${group.stats.ABSENT} | Retards: ${group.stats.LATE}`, 14, yPos);
+          yPos += 4;
+          
+          const tableData = group.records.map(r => [
+            `${r.student?.firstName} ${r.student?.lastName}`,
+            r.student?.registrationNumber || r.student?.studentId || '-',
+            STATUS_CONFIG[r.status]?.label || r.status
+          ]);
+          
+          autoTable(doc, {
+            startY: yPos,
+            head: [['Étudiant', 'Matricule', 'Statut']],
+            body: tableData,
+            styles: { fontSize: 9 },
+            headStyles: { fillColor: [41, 128, 185] },
+          });
+          
+          yPos = doc.lastAutoTable.finalY + 15;
+        });
+      }
+      doc.save('presences_etudiants.pdf');
+    }
+  };
+
   if (loading) return <LoadingPage />;
 
   const rate = getAttendanceRate(records);
@@ -529,6 +596,9 @@ export default function AttendancePage() {
                 Vider
               </Button>
             )}
+            <Button variant="outline" className="h-9 px-3 text-xs gap-1.5" onClick={handleExportPDF}>
+              <Printer size={14} /> Exporter PDF
+            </Button>
           </div>
         </div>
 
