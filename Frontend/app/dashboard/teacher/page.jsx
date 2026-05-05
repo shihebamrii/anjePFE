@@ -122,7 +122,7 @@ export default function TeacherDashboard() {
             ) : (
               todaySessions.slice(0, 5).map((session, i) => (
                 <div key={i} className={`flex items-center justify-between p-3 rounded-xl border-l-4 transition-colors ${
-                  session.type === 'PRACTICAL' ? 'bg-rose-50/50 dark:bg-rose-950/50 border-rose-500' : session.type === 'TUTORIAL' ? 'bg-emerald-50/50 dark:bg-emerald-950/50 border-emerald-500' : 'bg-blue-50/50 dark:bg-blue-950/50 border-blue-500'
+                  session.type === 'PRACTICAL' ? 'bg-amber-50/50 dark:bg-amber-950/50 border-amber-500' : session.type === 'TUTORIAL' ? 'bg-emerald-50/50 dark:bg-emerald-950/50 border-emerald-500' : 'bg-blue-50/50 dark:bg-blue-950/50 border-blue-500'
                 }`}>
                   <div className="flex-1 min-w-0">
                     <p className="text-[13px] font-bold text-slate-800 dark:text-slate-200 truncate">{session.courseName || 'Module'}</p>
@@ -138,7 +138,7 @@ export default function TeacherDashboard() {
                   <div className="text-right shrink-0 ml-3">
                     <span className="text-[11px] font-extrabold text-slate-700 dark:text-slate-300">{TIME_LABELS[session.timeSlot]}</span>
                     <Badge className={`block mt-1 text-[8px] uppercase tracking-wider font-black ${
-                      session.type === 'PRACTICAL' ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800' : session.type === 'TUTORIAL' ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800' : 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800'
+                      session.type === 'PRACTICAL' ? 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800' : session.type === 'TUTORIAL' ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800' : 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800'
                     }`}>
                       {session.type === 'PRACTICAL' ? 'TP' : session.type === 'TUTORIAL' ? 'TD' : 'CR'}
                       {session.group && ` - ${session.group}`}

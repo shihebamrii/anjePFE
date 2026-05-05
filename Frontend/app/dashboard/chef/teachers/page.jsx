@@ -20,7 +20,7 @@ const GRADE_COLORS = {
   'Ens.Sec': 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-400 dark:border-amber-800',
   'Vac': 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700',
   'Ing': 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-400 dark:border-emerald-800',
-  'Prof.Em': 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950 dark:text-rose-400 dark:border-rose-800',
+  'Prof.Em': 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950 dark:text-indigo-400 dark:border-indigo-800',
 };
 
 const GRADE_OPTIONS = [
@@ -229,7 +229,7 @@ export default function TeachersPage() {
                         <button onClick={() => handleEdit(teacher)} className="p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950 text-blue-500 transition-colors" title="Modifier">
                           <Pencil size={15} />
                         </button>
-                        <button onClick={() => handleDeleteClick(teacher)} className="p-2 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950 text-rose-500 transition-colors" title="Supprimer">
+                        <button onClick={() => handleDeleteClick(teacher)} className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-950 text-red-500 transition-colors" title="Supprimer">
                           <Trash2 size={15} />
                         </button>
                       </div>
@@ -259,7 +259,7 @@ export default function TeachersPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            {error && <div className="text-sm text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-4 py-2.5 font-medium">{error}</div>}
+            {error && <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5 font-medium">{error}</div>}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block">Prénom *</label>
@@ -308,7 +308,7 @@ export default function TeachersPage() {
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} className="rounded-xl">Annuler</Button>
-            <Button onClick={handleDeleteConfirm} disabled={saving} className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl">
+            <Button onClick={handleDeleteConfirm} disabled={saving} className="bg-red-600 hover:bg-red-700 text-white rounded-xl">
               {saving ? 'Suppression...' : 'Supprimer'}
             </Button>
           </DialogFooter>

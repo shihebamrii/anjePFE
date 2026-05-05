@@ -80,7 +80,7 @@ const roleGradients = {
   TEACHER: 'from-blue-600 to-cyan-700',
   STUDENT: 'from-emerald-600 to-teal-700',
   PARTNER: 'from-amber-600 to-orange-700',
-  CHEF_DEPT: 'from-rose-600 to-pink-700',
+  CHEF_DEPT: 'from-indigo-600 to-blue-700',
 };
 
 export default function Sidebar() {

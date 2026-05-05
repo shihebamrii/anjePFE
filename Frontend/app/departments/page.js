@@ -8,7 +8,7 @@ export default function DepartmentsPage() {
     { name: 'Génie Mécanique', code: 'GM', icon: Wrench, color: 'text-slate-600', bg: 'bg-slate-100', desc: 'Conception, Fabrication et Maintenance Industrielle.' },
     { name: 'Génie Civil', code: 'GC', icon: Building2, color: 'text-emerald-600', bg: 'bg-emerald-50', desc: 'Bâtiment, Travaux Publics et Topographie.' },
     { name: 'Génie des Procédés', code: 'GP', icon: FlaskConical, color: 'text-purple-500', bg: 'bg-purple-50', desc: 'Chimie Industrielle, Environnement et Matériaux.' },
-    { name: 'Sciences Économiques et Gestion', code: 'SEG', icon: BarChart3, color: 'text-rose-500', bg: 'bg-rose-50', desc: 'Commerce électronique, Marketing et Finance.' },
+    { name: 'Sciences Économiques et Gestion', code: 'SEG', icon: BarChart3, color: 'text-indigo-500', bg: 'bg-indigo-50', desc: 'Commerce électronique, Marketing et Finance.' },
   ];
 
   return (

@@ -17,7 +17,7 @@ const GRADE_COLORS = {
   'Ens.Sec': 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-400 dark:border-amber-800',
   'Vac': 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700',
   'Ing': 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-400 dark:border-emerald-800',
-  'Prof.Em': 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950 dark:text-rose-400 dark:border-rose-800',
+  'Prof.Em': 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950 dark:text-indigo-400 dark:border-indigo-800',
 };
 
 export default function ChefDashboard() {
@@ -56,7 +56,7 @@ export default function ChefDashboard() {
   return (
     <div className="space-y-6">
       {/* Welcome banner */}
-      <div className="rounded-2xl bg-gradient-to-r from-rose-600 via-pink-600 to-rose-700 p-6 md:p-8 text-white shadow-xl relative overflow-hidden">
+      <div className="rounded-2xl bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 p-6 md:p-8 text-white shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-white/[0.04] -translate-y-1/2 translate-x-1/3 blur-2xl" />
         <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-white/[0.03] translate-y-1/3 -translate-x-1/4 blur-xl" />
         <div className="relative z-10">
@@ -78,7 +78,7 @@ export default function ChefDashboard() {
         <Card className="border-0 card-interactive">
           <CardContent className="p-5">
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center shadow-md">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-md">
                 <Users className="text-white" size={18} />
               </div>
             </div>

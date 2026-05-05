@@ -93,7 +93,7 @@ export default function ComplaintsPage() {
         </Card>
         <Card className="border-0">
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-md">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-md">
               <XCircle className="text-white" size={18} />
             </div>
             <div>

@@ -84,7 +84,7 @@ export default function RoomsPage() {
                 {room.isAvailable ? (
                   <CheckCircle2 size={14} className="text-emerald-500" />
                 ) : (
-                  <XCircle size={14} className="text-rose-500" />
+                  <XCircle size={14} className="text-red-500" />
                 )}
               </div>
               

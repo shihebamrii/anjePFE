@@ -515,9 +515,9 @@ function getTypeColors(type) {
     case 'LECTURE':
       return 'bg-blue-50 dark:bg-blue-950 border-blue-500 text-blue-900 dark:text-blue-300';
     case 'TUTORIAL':
-      return 'bg-indigo-50 dark:bg-indigo-950 border-indigo-500 text-indigo-900 dark:text-indigo-300';
-    case 'PRACTICAL':
       return 'bg-emerald-50 dark:bg-emerald-950 border-emerald-500 text-emerald-900 dark:text-emerald-300';
+    case 'PRACTICAL':
+      return 'bg-amber-50 dark:bg-amber-950 border-amber-500 text-amber-900 dark:text-amber-300';
     default:
       return 'bg-slate-100 dark:bg-slate-800 border-slate-400 text-slate-800 dark:text-slate-300';
   }

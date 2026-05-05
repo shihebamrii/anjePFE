@@ -19,7 +19,7 @@ import autoTable from 'jspdf-autotable';
 
 const STATUS_CONFIG = {
   PRESENT: { label: 'Présent', icon: Check, color: 'bg-emerald-500 text-white', ring: 'ring-emerald-200', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  ABSENT:  { label: 'Absent',  icon: X,     color: 'bg-rose-500 text-white',    ring: 'ring-rose-200',    badge: 'bg-rose-50 text-rose-700 border-rose-200' },
+  ABSENT:  { label: 'Absent',  icon: X,     color: 'bg-red-500 text-white',    ring: 'ring-red-200',    badge: 'bg-red-50 text-red-700 border-red-200' },
   LATE:    { label: 'Retard',  icon: Clock, color: 'bg-amber-500 text-white',   ring: 'ring-amber-200',   badge: 'bg-amber-50 text-amber-700 border-amber-200' },
 };
 
@@ -387,7 +387,7 @@ export default function AttendancePage() {
         {[
           { label: 'Taux de Présence', value: `${rate}%`, gradient: 'from-emerald-500 to-teal-600', icon: UserCheck },
           { label: 'Présent', value: present, gradient: 'from-emerald-500 to-teal-600', icon: Check },
-          { label: 'Absent', value: absent, gradient: 'from-red-500 to-rose-600', icon: X },
+          { label: 'Absent', value: absent, gradient: 'from-red-500 to-red-600', icon: X },
           { label: 'En Retard', value: late, gradient: 'from-amber-500 to-orange-600', icon: Clock },
         ].map((s, i) => (
           <Card key={i} className="border-0">
@@ -475,13 +475,13 @@ export default function AttendancePage() {
                         <Check size={12} /> Tous Présents
                       </button>
                       <button onClick={() => setAllStatus('ABSENT')}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-50 dark:bg-rose-950 text-rose-700 dark:text-rose-400 text-xs font-bold border border-rose-200 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-rose-900 transition-colors">
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-400 text-xs font-bold border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900 transition-colors">
                         <X size={12} /> Tous Absents
                       </button>
                       <div className="ml-auto flex items-center gap-3 text-xs font-bold">
                         <span className="text-slate-400">{markingUnmarked} ❓</span>
                         <span className="text-emerald-600">{markingPresent} ✓</span>
-                        <span className="text-rose-600">{markingAbsent} ✗</span>
+                        <span className="text-red-600">{markingAbsent} ✗</span>
                         <span className="text-amber-600">{markingLate} ⏰</span>
                         <span className="text-slate-400">/ {classStudents.length}</span>
                       </div>
@@ -536,7 +536,7 @@ export default function AttendancePage() {
 
                     {/* Feedback messages */}
                     {errorMsg && (
-                      <div className="flex items-center gap-2 text-sm text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950 border border-rose-200 dark:border-rose-800 rounded-xl px-4 py-3 font-medium">
+                      <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3 font-medium">
                         <AlertCircle size={16} /> {errorMsg}
                       </div>
                     )}
@@ -679,7 +679,7 @@ export default function AttendancePage() {
                       <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-100 dark:border-slate-700">
                         <span className="text-xs font-bold text-emerald-600" title="Présents">{group.stats.PRESENT} ✓</span>
                         <div className="w-px h-3 bg-slate-200 mx-1"></div>
-                        <span className="text-xs font-bold text-rose-600" title="Absents">{group.stats.ABSENT} ✗</span>
+                        <span className="text-xs font-bold text-red-600" title="Absents">{group.stats.ABSENT} ✗</span>
                         <div className="w-px h-3 bg-slate-200 mx-1"></div>
                         <span className="text-xs font-bold text-amber-600" title="En Retard">{group.stats.LATE} ⏰</span>
                       </div>

@@ -374,7 +374,7 @@ export default function StudentsPage() {
                         <button onClick={() => handleEdit(student)} className="p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950 text-blue-500 transition-colors" title="Modifier">
                           <Pencil size={15} />
                         </button>
-                        <button onClick={() => handleDeleteClick(student)} className="p-2 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950 text-rose-500 transition-colors" title="Supprimer">
+                        <button onClick={() => handleDeleteClick(student)} className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-950 text-red-500 transition-colors" title="Supprimer">
                           <Trash2 size={15} />
                         </button>
                       </div>
@@ -397,7 +397,7 @@ export default function StudentsPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            {error && <div className="text-sm text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-4 py-2.5 font-medium">{error}</div>}
+            {error && <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5 font-medium">{error}</div>}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block">Prénom *</label>
@@ -446,7 +446,7 @@ export default function StudentsPage() {
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} className="rounded-xl">Annuler</Button>
-            <Button onClick={handleDeleteConfirm} disabled={saving} className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl">
+            <Button onClick={handleDeleteConfirm} disabled={saving} className="bg-red-600 hover:bg-red-700 text-white rounded-xl">
               {saving ? 'Suppression...' : 'Supprimer'}
             </Button>
           </DialogFooter>
@@ -521,9 +521,9 @@ export default function StudentsPage() {
 
             {/* Feedback Messages */}
             {bulkErrors && Array.isArray(bulkErrors) && (
-              <div className="bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 rounded-xl p-4 max-h-32 overflow-y-auto">
-                <p className="text-xs font-bold text-rose-700 dark:text-rose-400 mb-2">Problèmes détectés :</p>
-                <ul className="list-disc pl-4 text-[11px] text-rose-600 dark:text-rose-300 space-y-1">
+              <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-xl p-4 max-h-32 overflow-y-auto">
+                <p className="text-xs font-bold text-red-700 dark:text-red-400 mb-2">Problèmes détectés :</p>
+                <ul className="list-disc pl-4 text-[11px] text-red-600 dark:text-red-300 space-y-1">
                   {bulkErrors.map((err, i) => <li key={i}>{err}</li>)}
                 </ul>
               </div>

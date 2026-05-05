@@ -188,7 +188,7 @@ export default function CoursesPage() {
                     <button onClick={() => handleEdit(course)} className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950 text-blue-500 transition-colors" title="Modifier">
                       <Pencil size={14} />
                     </button>
-                    <button onClick={() => handleDeleteClick(course)} className="p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950 text-rose-500 transition-colors" title="Supprimer">
+                    <button onClick={() => handleDeleteClick(course)} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950 text-red-500 transition-colors" title="Supprimer">
                       <Trash2 size={14} />
                     </button>
                   </div>
@@ -248,7 +248,7 @@ export default function CoursesPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            {error && <div className="text-sm text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-4 py-2.5 font-medium">{error}</div>}
+            {error && <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5 font-medium">{error}</div>}
             <div>
               <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block">Nom du cours *</label>
               <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Ex: Algorithmique" />
@@ -325,7 +325,7 @@ export default function CoursesPage() {
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} className="rounded-xl">Annuler</Button>
-            <Button onClick={handleDeleteConfirm} disabled={saving} className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl">
+            <Button onClick={handleDeleteConfirm} disabled={saving} className="bg-red-600 hover:bg-red-700 text-white rounded-xl">
               {saving ? 'Suppression...' : 'Supprimer'}
             </Button>
           </DialogFooter>

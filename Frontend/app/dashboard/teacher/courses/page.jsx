@@ -14,7 +14,7 @@ const TIME_LABELS = ['', '08:30', '10:10', '11:50', '14:00', '15:40', '17:20'];
 const TYPE_COLORS = {
   LECTURE: 'bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800',
   TUTORIAL: 'bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
-  PRACTICAL: 'bg-rose-50 dark:bg-rose-950 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800',
+  PRACTICAL: 'bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800',
 };
 const TYPE_LABELS = { LECTURE: 'Cours', TUTORIAL: 'TD', PRACTICAL: 'TP' };
 
@@ -83,7 +83,7 @@ export default function TeacherCoursesPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
         {filtered.map((course, i) => (
           <Card key={i} className="border-0 card-interactive group overflow-hidden">
-            <div className={`h-1.5 w-full bg-gradient-to-r ${course.type === 'PRACTICAL' ? 'from-rose-400 to-pink-500' : course.type === 'TUTORIAL' ? 'from-emerald-400 to-teal-500' : 'from-blue-400 to-indigo-500'}`} />
+            <div className={`h-1.5 w-full bg-gradient-to-r ${course.type === 'PRACTICAL' ? 'from-amber-400 to-orange-500' : course.type === 'TUTORIAL' ? 'from-emerald-400 to-teal-500' : 'from-blue-400 to-indigo-500'}`} />
             <CardContent className="p-5">
               <div className="flex justify-between items-start mb-3">
                 <div>
