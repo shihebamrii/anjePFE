@@ -12,7 +12,7 @@ import { userService } from '@/services/userService';
 import { stageService } from '@/services/stageService';
 import { formatDate } from '@/lib/utils';
 import {
-  Users, GraduationCap, Newspaper, Calendar, Briefcase,
+  Users, GraduationCap, Newspaper, Calendar, Briefcase, Building2,
   Plus, ArrowRight, ArrowUpRight, TrendingUp
 } from 'lucide-react';
 import Link from 'next/link';

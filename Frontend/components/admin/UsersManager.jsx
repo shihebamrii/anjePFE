@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { getInitials } from '@/lib/utils';
 import { Search, Plus, Edit, Trash2, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { PortalModal } from '@/components/ui/portal-modal';
 
 export default function UsersManager({ roleFilter, title, description, badgeIcon: BadgeIcon }) {
   const [users, setUsers] = useState([]);
@@ -253,99 +254,95 @@ export default function UsersManager({ roleFilter, title, description, badgeIcon
       <p className="text-xs text-slate-400 text-center">{filtered.length} profil(s) affiché(s)</p>
 
       {/* Modal CRUD */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
-            <div className="p-6 border-b border-slate-100 dark:border-slate-800">
-              <h2 className="text-xl font-bold flex items-center gap-2">
-                {editingId ? <Edit className="text-blue-500" size={20} /> : <Plus className="text-accent" size={20} />}
-                {editingId ? 'Modifier le profil' : 'Ajouter un profil'}
-              </h2>
+      <PortalModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <div className="p-6 border-b border-slate-100 dark:border-slate-800">
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            {editingId ? <Edit className="text-blue-500" size={20} /> : <Plus className="text-accent" size={20} />}
+            {editingId ? 'Modifier le profil' : 'Ajouter un profil'}
+          </h2>
+        </div>
+        
+        <div className="p-6 bg-slate-50/50 dark:bg-slate-900/50">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Prénom</label>
+                <Input required value={formData.firstName} onChange={(e) => setFormData({...formData, firstName: e.target.value})} className="bg-white dark:bg-slate-900" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Nom</label>
+                <Input required value={formData.lastName} onChange={(e) => setFormData({...formData, lastName: e.target.value})} className="bg-white dark:bg-slate-900" />
+              </div>
             </div>
             
-            <div className="p-6 bg-slate-50/50 dark:bg-slate-900/50">
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Prénom</label>
-                    <Input required value={formData.firstName} onChange={(e) => setFormData({...formData, firstName: e.target.value})} className="bg-white dark:bg-slate-900" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Nom</label>
-                    <Input required value={formData.lastName} onChange={(e) => setFormData({...formData, lastName: e.target.value})} className="bg-white dark:bg-slate-900" />
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Email</label>
-                  <Input type="email" required value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="bg-white dark:bg-slate-900" />
-                </div>
-
-                {!roleFilter && (
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Rôle</label>
-                    <select
-                      value={formData.role}
-                      onChange={(e) => setFormData({...formData, role: e.target.value})}
-                      className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-accent/20 outline-none"
-                    >
-                      <option value="STUDENT">Étudiant</option>
-                      <option value="TEACHER">Enseignant</option>
-                      <option value="CHEF_DEPT">Chef de Département</option>
-                      <option value="PARTNER">Partenaire</option>
-                      <option value="ADMIN">Administrateur</option>
-                    </select>
-                  </div>
-                )}
-                
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-                    Mot de passe {editingId && <span className="lowercase font-normal text-slate-400">(laisser vide pour ne pas modifier)</span>}
-                  </label>
-                  <Input type="password" required={!editingId} value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} className="bg-white dark:bg-slate-900" />
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Département</label>
-                    <select
-                      value={formData.department}
-                      onChange={(e) => setFormData({...formData, department: e.target.value})}
-                      className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-accent/20 outline-none"
-                    >
-                      <option value="">Aucun</option>
-                      {departments.map(d => (
-                        <option key={d._id} value={d._id}>{d.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Statut</label>
-                    <select
-                      value={String(formData.isActive)}
-                      onChange={(e) => setFormData({...formData, isActive: e.target.value === 'true'})}
-                      className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-accent/20 outline-none"
-                    >
-                      <option value="true">Actif</option>
-                      <option value="false">Inactif</option>
-                    </select>
-                  </div>
-                </div>
-                
-                <div className="flex gap-3 justify-end pt-4 mt-2">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-600 bg-white border border-slate-200 shadow-sm hover:bg-slate-50 transition-colors">
-                    Annuler
-                  </button>
-                  <button type="submit" className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-accent shadow-md shadow-accent/20 hover:bg-accent/90 transition-colors">
-                    Enregistrer
-                  </button>
-                </div>
-              </form>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Email</label>
+              <Input type="email" required value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="bg-white dark:bg-slate-900" />
             </div>
-          </div>
+
+            {!roleFilter && (
+              <div>
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Rôle</label>
+                <select
+                  value={formData.role}
+                  onChange={(e) => setFormData({...formData, role: e.target.value})}
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-accent/20 outline-none"
+                >
+                  <option value="STUDENT">Étudiant</option>
+                  <option value="TEACHER">Enseignant</option>
+                  <option value="CHEF_DEPT">Chef de Département</option>
+                  <option value="PARTNER">Partenaire</option>
+                  <option value="ADMIN">Administrateur</option>
+                </select>
+              </div>
+            )}
+            
+            <div>
+              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                Mot de passe {editingId && <span className="lowercase font-normal text-slate-400">(laisser vide pour ne pas modifier)</span>}
+              </label>
+              <Input type="password" required={!editingId} value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} className="bg-white dark:bg-slate-900" />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Département</label>
+                <select
+                  value={formData.department}
+                  onChange={(e) => setFormData({...formData, department: e.target.value})}
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-accent/20 outline-none"
+                >
+                  <option value="">Aucun</option>
+                  {departments.map(d => (
+                    <option key={d._id} value={d._id}>{d.name}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Statut</label>
+                <select
+                  value={String(formData.isActive)}
+                  onChange={(e) => setFormData({...formData, isActive: e.target.value === 'true'})}
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-accent/20 outline-none"
+                >
+                  <option value="true">Actif</option>
+                  <option value="false">Inactif</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="flex gap-3 justify-end pt-4 mt-2">
+              <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-600 bg-white border border-slate-200 shadow-sm hover:bg-slate-50 transition-colors">
+                Annuler
+              </button>
+              <button type="submit" className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-accent shadow-md shadow-accent/20 hover:bg-accent/90 transition-colors">
+                Enregistrer
+              </button>
+            </div>
+          </form>
         </div>
-      )}
+      </PortalModal>
     </div>
   );
 }

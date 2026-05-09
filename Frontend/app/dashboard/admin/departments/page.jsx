@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { LoadingPage } from '@/components/ui/loading';
 import { departmentService } from '@/services/departmentService';
 import { Building2, Plus, Edit, Trash2, Search, Mail, User } from 'lucide-react';
+import { PortalModal } from '@/components/ui/portal-modal';
 
 export default function DepartmentsManager() {
   const [departments, setDepartments] = useState([]);
@@ -156,41 +157,37 @@ export default function DepartmentsManager() {
         ))}
       </div>
 
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
-            <div className="p-6 border-b border-slate-100 dark:border-slate-800">
-              <h2 className="text-xl font-bold">{editingId ? 'Modifier' : 'Ajouter'} un Département</h2>
-            </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Nom du département</label>
-                <Input required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Description</label>
-                <textarea 
-                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm min-h-[100px]"
-                  value={formData.description} 
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Nom du Chef</label>
-                <Input required value={formData.head} onChange={(e) => setFormData({...formData, head: e.target.value})} />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Email du Chef</label>
-                <Input type="email" required value={formData.headEmail} onChange={(e) => setFormData({...formData, headEmail: e.target.value})} />
-              </div>
-              <div className="flex gap-3 justify-end pt-4">
-                <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Annuler</Button>
-                <Button type="submit" variant="accent">Enregistrer</Button>
-              </div>
-            </form>
-          </div>
+      <PortalModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <div className="p-6 border-b border-slate-100 dark:border-slate-800">
+          <h2 className="text-xl font-bold">{editingId ? 'Modifier' : 'Ajouter'} un Département</h2>
         </div>
-      )}
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Nom du département</label>
+            <Input required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Description</label>
+            <textarea 
+              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm min-h-[100px]"
+              value={formData.description} 
+              onChange={(e) => setFormData({...formData, description: e.target.value})}
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Nom du Chef</label>
+            <Input required value={formData.head} onChange={(e) => setFormData({...formData, head: e.target.value})} />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Email du Chef</label>
+            <Input type="email" required value={formData.headEmail} onChange={(e) => setFormData({...formData, headEmail: e.target.value})} />
+          </div>
+          <div className="flex gap-3 justify-end pt-4">
+            <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Annuler</Button>
+            <Button type="submit" variant="accent">Enregistrer</Button>
+          </div>
+        </form>
+      </PortalModal>
     </div>
   );
 }

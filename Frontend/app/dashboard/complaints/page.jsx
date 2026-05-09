@@ -10,6 +10,7 @@ import { LoadingPage } from '@/components/ui/loading';
 import { complaintService } from '@/services/complaintService';
 import { formatDate } from '@/lib/utils';
 import { AlertTriangle, CheckCircle2, XCircle, Clock, MessageSquare, X, Send } from 'lucide-react';
+import { PortalModal } from '@/components/ui/portal-modal';
 
 const STATUS_CONFIG = {
   PENDING: { label: 'En attente', color: 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-400 dark:border-amber-800', icon: Clock },
@@ -183,71 +184,67 @@ export default function ComplaintsPage() {
       </Card>
 
       {/* Resolve Modal */}
-      {resolveModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={(e) => { if (e.target === e.currentTarget) setResolveModal(null); }}>
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md border border-slate-200 dark:border-slate-700">
-            <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Traiter la Réclamation</h2>
-              <button onClick={() => setResolveModal(null)} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                <X size={18} className="text-slate-400" />
+      <PortalModal isOpen={!!resolveModal} onClose={() => setResolveModal(null)}>
+        <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
+          <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Traiter la Réclamation</h2>
+          <button onClick={() => setResolveModal(null)} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+            <X size={18} className="text-slate-400" />
+          </button>
+        </div>
+        <div className="p-6 space-y-4">
+          <div>
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">Décision</label>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setResolveData({ ...resolveData, status: 'ACCEPTED' })}
+                className={`flex-1 py-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+                  resolveData.status === 'ACCEPTED'
+                    ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400'
+                    : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:border-emerald-300'
+                }`}
+              >
+                <CheckCircle2 size={16} className="inline mr-1.5" /> Accepter
+              </button>
+              <button
+                onClick={() => setResolveData({ ...resolveData, status: 'REJECTED' })}
+                className={`flex-1 py-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+                  resolveData.status === 'REJECTED'
+                    ? 'border-red-500 bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-400'
+                    : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:border-red-300'
+                }`}
+              >
+                <XCircle size={16} className="inline mr-1.5" /> Rejeter
               </button>
             </div>
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">Décision</label>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setResolveData({ ...resolveData, status: 'ACCEPTED' })}
-                    className={`flex-1 py-3 rounded-xl border-2 text-sm font-semibold transition-all ${
-                      resolveData.status === 'ACCEPTED'
-                        ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400'
-                        : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:border-emerald-300'
-                    }`}
-                  >
-                    <CheckCircle2 size={16} className="inline mr-1.5" /> Accepter
-                  </button>
-                  <button
-                    onClick={() => setResolveData({ ...resolveData, status: 'REJECTED' })}
-                    className={`flex-1 py-3 rounded-xl border-2 text-sm font-semibold transition-all ${
-                      resolveData.status === 'REJECTED'
-                        ? 'border-red-500 bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-400'
-                        : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:border-red-300'
-                    }`}
-                  >
-                    <XCircle size={16} className="inline mr-1.5" /> Rejeter
-                  </button>
-                </div>
-              </div>
-              <div>
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">Réponse (optionnel)</label>
-                <textarea
-                  value={resolveData.response}
-                  onChange={(e) => setResolveData({ ...resolveData, response: e.target.value })}
-                  placeholder="Ajouter un commentaire..."
-                  rows={3}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-800 dark:text-slate-200 shadow-sm focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none resize-none"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-100 dark:border-slate-800">
-              <Button type="button" variant="ghost" size="sm" onClick={() => setResolveModal(null)}>Annuler</Button>
-              <Button
-                type="button"
-                size="sm"
-                disabled={!resolveData.status || resolving}
-                onClick={handleResolve}
-                className="gap-1.5"
-              >
-                {resolving ? (
-                  <><span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Traitement...</>
-                ) : (
-                  <><Send size={14} /> Confirmer</>
-                )}
-              </Button>
-            </div>
+          </div>
+          <div>
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">Réponse (optionnel)</label>
+            <textarea
+              value={resolveData.response}
+              onChange={(e) => setResolveData({ ...resolveData, response: e.target.value })}
+              placeholder="Ajouter un commentaire..."
+              rows={3}
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-800 dark:text-slate-200 shadow-sm focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none resize-none"
+            />
           </div>
         </div>
-      )}
+        <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-100 dark:border-slate-800">
+          <Button type="button" variant="ghost" size="sm" onClick={() => setResolveModal(null)}>Annuler</Button>
+          <Button
+            type="button"
+            size="sm"
+            disabled={!resolveData.status || resolving}
+            onClick={handleResolve}
+            className="gap-1.5"
+          >
+            {resolving ? (
+              <><span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Traitement...</>
+            ) : (
+              <><Send size={14} /> Confirmer</>
+            )}
+          </Button>
+        </div>
+      </PortalModal>
     </div>
   );
 }
