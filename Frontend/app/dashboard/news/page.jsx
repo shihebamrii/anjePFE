@@ -16,7 +16,7 @@ const CATEGORY_LABELS = { all: 'Tout', academic: 'Académique', clubs: 'Clubs', 
 
 export default function NewsPage() {
   const { user } = useAuth();
-  const isChef = user?.role === 'CHEF_DEPT';
+  const isAuthorized = user?.role === 'CHEF_DEPT' || user?.role === 'ADMIN';
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState('all');
@@ -85,7 +85,7 @@ export default function NewsPage() {
           </h1>
           <p className="text-slate-500 mt-1 text-sm">Dernières nouvelles et annonces du campus</p>
         </div>
-        {isChef && (
+        {isAuthorized && (
           <Button onClick={() => setShowForm(!showForm)} size="sm">
             {showForm ? <><X size={14} /> Annuler</> : <><Plus size={14} /> Publier</>}
           </Button>
@@ -105,7 +105,7 @@ export default function NewsPage() {
       </div>
 
       {/* Form */}
-      {showForm && isChef && (
+      {showForm && isAuthorized && (
         <Card className="animate-scale-in border-2 border-accent">
           <CardHeader className="pb-3"><CardTitle className="text-[15px]">Nouvelle Actualité</CardTitle></CardHeader>
           <CardContent>
@@ -158,7 +158,7 @@ export default function NewsPage() {
             <CardContent className="p-5">
               <div className="flex items-center justify-between mb-3">
                 <Badge variant={item.type === 'urgent' ? 'danger' : 'secondary'} className="text-[10px]">{item.type}</Badge>
-                {isChef && (
+                {isAuthorized && (
                   <Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-600" onClick={() => handleDelete(item._id)}>
                     <Trash2 size={12} />
                   </Button>

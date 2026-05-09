@@ -16,8 +16,8 @@ const TYPE_LABELS = { '': 'Tout', PFE: 'PFE', OUVRIER: 'Ouvrier', PERFECTIONNEME
 
 export default function StagesPage() {
   const { user } = useAuth();
-  const isChef = user?.role === 'CHEF_DEPT';
-  const canManage = isChef;
+  const isAuthorized = user?.role === 'CHEF_DEPT' || user?.role === 'ADMIN' || user?.role === 'PARTNER';
+  const canManage = isAuthorized;
   const [stages, setStages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState('');

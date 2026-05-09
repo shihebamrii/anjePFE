@@ -19,7 +19,8 @@ import {
 const navItems = {
   ADMIN: [
     { href: '/dashboard/admin', label: 'Tableau de bord', icon: LayoutDashboard },
-    { href: '/dashboard/admin/chefs', label: 'Chefs de Dép.', icon: Building2 },
+    { href: '/dashboard/admin/departments', label: 'Départements', icon: Building2 },
+    { href: '/dashboard/admin/chefs', label: 'Chefs de Dép.', icon: Users },
     { href: '/dashboard/admin/teachers', label: 'Enseignants', icon: GraduationCap },
     { href: '/dashboard/admin/students', label: 'Étudiants', icon: Users },
     { href: '/dashboard/news', label: 'Actualités', icon: Newspaper },

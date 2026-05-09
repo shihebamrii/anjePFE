@@ -6,21 +6,71 @@ import User from '../models/User.js';
 // @access  Private
 export const getDepartments = async (req, res) => {
   try {
-    const departments = await Department.find().select('-teachers');
-    const result = await Promise.all(
-      departments.map(async (dept) => {
-        const full = await Department.findById(dept._id);
-        return {
-          _id: dept._id,
-          name: dept.name,
-          description: dept.description,
-          head: dept.head,
-          headEmail: dept.headEmail,
-          teacherCount: full.teachers.length,
-        };
-      })
-    );
+    const departments = await Department.find();
+    const result = departments.map((dept) => {
+      return {
+        _id: dept._id,
+        name: dept.name,
+        description: dept.description,
+        head: dept.head,
+        headEmail: dept.headEmail,
+        teacherCount: dept.teachers.length,
+        classCount: dept.classes.length,
+      };
+    });
     res.json(result);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Create a department
+// @route   POST /api/departments
+// @access  Private/Admin
+export const createDepartment = async (req, res) => {
+  try {
+    const { name, description, head, headEmail } = req.body;
+    const exists = await Department.findOne({ name });
+    if (exists) return res.status(400).json({ message: 'Ce département existe déjà.' });
+
+    const dept = await Department.create({ name, description, head, headEmail });
+    res.status(201).json(dept);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Update a department
+// @route   PUT /api/departments/:id
+// @access  Private/Admin
+export const updateDepartment = async (req, res) => {
+  try {
+    const { name, description, head, headEmail } = req.body;
+    const dept = await Department.findById(req.params.id);
+    if (!dept) return res.status(404).json({ message: 'Département introuvable.' });
+
+    if (name) dept.name = name;
+    if (description !== undefined) dept.description = description;
+    if (head) dept.head = head;
+    if (headEmail) dept.headEmail = headEmail;
+
+    await dept.save();
+    res.json(dept);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Delete a department
+// @route   DELETE /api/departments/:id
+// @access  Private/Admin
+export const deleteDepartment = async (req, res) => {
+  try {
+    const dept = await Department.findById(req.params.id);
+    if (!dept) return res.status(404).json({ message: 'Département introuvable.' });
+
+    await Department.deleteOne({ _id: req.params.id });
+    res.json({ message: 'Département supprimé.' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

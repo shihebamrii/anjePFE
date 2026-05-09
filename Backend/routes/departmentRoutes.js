@@ -3,6 +3,9 @@ import {
   getDepartments,
   getDepartment,
   getMyDepartment,
+  createDepartment,
+  updateDepartment,
+  deleteDepartment,
   addTeacher,
   updateTeacher,
   deleteTeacher,
@@ -11,7 +14,7 @@ import {
   deleteClass,
   addBulkStudents,
 } from '../controllers/departmentController.js';
-import { protect, chefDept } from '../middleware/authMiddleware.js';
+import { protect, admin, chefDept } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -19,6 +22,11 @@ const router = express.Router();
 router.get('/my', protect, getMyDepartment);
 router.get('/', getDepartments); // public access for homepage
 router.get('/:id', protect, getDepartment);
+
+// Global Department CRUD (admin only)
+router.post('/', protect, admin, createDepartment);
+router.put('/:id', protect, admin, updateDepartment);
+router.delete('/:id', protect, admin, deleteDepartment);
 
 // Teacher CRUD (chef only)
 router.post('/my/teachers', protect, chefDept, addTeacher);

@@ -25,13 +25,13 @@ export const getUsers = async (req, res) => {
 
 export const createUser = async (req, res) => {
   try {
-    const { firstName, lastName, email, password, role, department } = req.body;
+    const { firstName, lastName, email, password, role, department, isActive } = req.body;
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: 'User already exists' });
     }
     const user = await User.create({
-      firstName, lastName, email, password, role, department
+      firstName, lastName, email, password, role, department, isActive: isActive !== undefined ? isActive : true
     });
     const userWithoutPassword = await User.findById(user._id).select('-password');
     res.status(201).json(userWithoutPassword);
@@ -42,7 +42,7 @@ export const createUser = async (req, res) => {
 
 export const updateUser = async (req, res) => {
   try {
-    const { firstName, lastName, email, role, department, password } = req.body;
+    const { firstName, lastName, email, role, department, password, isActive } = req.body;
     const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -53,6 +53,7 @@ export const updateUser = async (req, res) => {
     if (role) user.role = role;
     if (department !== undefined) user.department = department;
     if (password) user.password = password; // Will be hashed by pre-save hook
+    if (isActive !== undefined) user.isActive = isActive;
 
     await user.save();
     const updatedUser = await User.findById(user._id).select('-password');

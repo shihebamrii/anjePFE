@@ -44,10 +44,10 @@ export default function AdminDashboard() {
   const teacherCount = stats.users.filter(u => u.role === 'TEACHER').length;
 
   const statCards = [
-    { icon: Users, label: 'Étudiants', value: studentCount, gradient: 'from-emerald-500 to-teal-600', bg: 'bg-emerald-50', link: '/dashboard/users' },
-    { icon: GraduationCap, label: 'Enseignants', value: teacherCount, gradient: 'from-blue-500 to-cyan-600', bg: 'bg-blue-50', link: '/dashboard/users' },
+    { icon: Building2, label: 'Chefs de Dép.', value: stats.users.filter(u => u.role === 'CHEF_DEPT').length, gradient: 'from-indigo-500 to-blue-600', bg: 'bg-indigo-50', link: '/dashboard/admin/chefs' },
+    { icon: GraduationCap, label: 'Enseignants', value: teacherCount, gradient: 'from-blue-500 to-cyan-600', bg: 'bg-blue-50', link: '/dashboard/admin/teachers' },
+    { icon: Users, label: 'Étudiants', value: studentCount, gradient: 'from-emerald-500 to-teal-600', bg: 'bg-emerald-50', link: '/dashboard/admin/students' },
     { icon: Newspaper, label: 'Actualités', value: stats.news.length, gradient: 'from-amber-500 to-orange-600', bg: 'bg-amber-50', link: '/dashboard/news' },
-    { icon: Briefcase, label: 'Stages', value: stats.stages.length, gradient: 'from-violet-500 to-indigo-600', bg: 'bg-violet-50', link: '/dashboard/stages' },
   ];
 
   return (
@@ -95,8 +95,9 @@ export default function AdminDashboard() {
           <div className="flex flex-wrap gap-2.5">
             <Link href="/dashboard/news"><Button variant="secondary" size="sm"><Plus size={13} /> Actualité</Button></Link>
             <Link href="/dashboard/events"><Button variant="secondary" size="sm"><Calendar size={13} /> Événement</Button></Link>
-            <Link href="/dashboard/users"><Button variant="secondary" size="sm"><Users size={13} /> Utilisateurs</Button></Link>
-            <Link href="/dashboard/grades"><Button variant="secondary" size="sm"><GraduationCap size={13} /> Notes</Button></Link>
+            <Link href="/dashboard/admin/chefs"><Button variant="secondary" size="sm"><Building2 size={13} /> Chefs Dép.</Button></Link>
+            <Link href="/dashboard/admin/teachers"><Button variant="secondary" size="sm"><GraduationCap size={13} /> Enseignants</Button></Link>
+            <Link href="/dashboard/admin/students"><Button variant="secondary" size="sm"><Users size={13} /> Étudiants</Button></Link>
           </div>
         </CardContent>
       </Card>

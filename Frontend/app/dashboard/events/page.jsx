@@ -25,7 +25,7 @@ const TYPE_LABELS = {
 
 export default function EventsPage() {
   const { user } = useAuth();
-  const isChef = user?.role === 'CHEF_DEPT' || user?.role === 'TEACHER';
+  const isAuthorized = user?.role === 'CHEF_DEPT' || user?.role === 'TEACHER' || user?.role === 'ADMIN';
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState('');
@@ -89,7 +89,7 @@ export default function EventsPage() {
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">Calendrier des événements académiques</p>
         </div>
-        {isChef && (
+        {isAuthorized && (
           <Button onClick={() => setShowForm(!showForm)} size="sm">
             {showForm ? <><X size={14} /> Annuler</> : <><Plus size={14} /> Créer</>}
           </Button>
@@ -105,7 +105,7 @@ export default function EventsPage() {
         ))}
       </div>
 
-      {showForm && isChef && (
+      {showForm && isAuthorized && (
         <Card className="animate-scale-in border-2 border-accent">
           <CardHeader className="pb-3"><CardTitle className="text-[15px]">Nouvel Événement</CardTitle></CardHeader>
           <CardContent>
@@ -175,7 +175,7 @@ export default function EventsPage() {
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <Badge className={`text-[10px] ${TYPE_COLORS[event.type] || 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'}`}>{TYPE_LABELS[event.type] || event.type}</Badge>
-                  {isChef && (
+                  {isAuthorized && (
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-red-400 hover:text-red-600" onClick={() => handleDelete(event._id)}>
                       <Trash2 size={14} />
                     </Button>
