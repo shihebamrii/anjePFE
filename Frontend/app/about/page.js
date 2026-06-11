@@ -28,7 +28,7 @@ export default function AboutPage() {
           </p>
         </div>
       </header>
-
+  
       {/* ═══════════ CONTENT ═══════════ */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 mt-16 mt-[-40px] relative z-20">
         <div className="bg-white rounded-[2.5rem] shadow-xl shadow-brand/5 border border-slate-200/60 p-8 sm:p-12 md:p-16 mb-16">

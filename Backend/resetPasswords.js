@@ -11,7 +11,7 @@ import bcrypt from 'bcrypt';
 
 dotenv.config();
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/iset_gafsa';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/anjePFE';
 const NEW_PASSWORD = 'iset123';
 
 async function resetAllPasswords() {

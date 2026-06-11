@@ -1,5 +1,5 @@
 'use client';
-
+//page fougani paramon
 import { useAuth } from '@/context/AuthContext';
 import { Bell, Sun, Moon, LogOut, User, Check, Info, AlertTriangle } from 'lucide-react';
 import { useState, useEffect } from 'react';

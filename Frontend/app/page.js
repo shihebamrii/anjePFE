@@ -199,7 +199,7 @@ export default function HomePage() {
               <span className="flex items-center gap-2"><Mail size={12} className="text-gold" /> contact@isetgf.rnu.tn</span>
             </div>
             <div className="flex gap-5">
-              <Link href="http://www.mes.tn/" target="_blank" className="hover:text-white transition-colors">Portail RNU</Link>
+              <Link href="https://oous.rnu.tn/oous_new/index.php" target="_blank" className="hover:text-white transition-colors">Portail RNU</Link>
               <Link href="http://www.mes.tn/" target="_blank" className="hover:text-white transition-colors">Ministère MESRS</Link>
             </div>
           </div>
@@ -407,8 +407,8 @@ export default function HomePage() {
 
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Button asChild size="lg" className="w-full sm:w-auto bg-gold hover:bg-gold-light text-brand px-6 sm:px-8 h-11 sm:h-13 text-[10px] sm:text-[11px] font-black uppercase tracking-widest rounded-full group shadow-lg shadow-gold/20">
-                <Link href="/register">
-                  Inscription Académique <ChevronRight size={16} className="ml-1 group-hover:translate-x-1 transition-transform" />
+                <Link href="/login">
+                  Login Académique <ChevronRight size={16} className="ml-1 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg" className="w-full sm:w-auto border border-white/20 bg-white/10 backdrop-blur-md hover:bg-white/20 hover:border-white/40 text-white px-6 sm:px-8 h-11 sm:h-13 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest rounded-full">
