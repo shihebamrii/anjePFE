@@ -31,7 +31,7 @@ export default function GradesPage() {
   
   // Single grade configuration metadata state
   const [formData, setFormData] = useState({
-    courseName: '', department: '', coefficient: '1', semester: 'S1', type: 'DS'
+    courseName: '', department: '', subject: '', coefficient: '1', semester: 'S1', type: 'DS'
   });
   
   const [studentScores, setStudentScores] = useState({}); // Dictionary mapping student IDs to numerical input scores
@@ -40,7 +40,7 @@ export default function GradesPage() {
   // --- Excel Bulk Import Modal States ---
   const [showImportModal, setShowImportModal] = useState(false); // Controls visibility of Excel upload dialog popup
   const [importData, setImportData] = useState({
-    courseName: '', department: '', semester: 'S1', type: 'DS', coefficient: '1'
+    courseName: '', department: '', subject: '', semester: 'S1', type: 'DS', coefficient: '1'
   });
   const [parsedRows, setParsedRows] = useState([]); // Buffer holding parsed excel rows data for preview table
   const [importFile, setImportFile] = useState(null); // Reference to uploaded Excel file object
@@ -117,11 +117,12 @@ export default function GradesPage() {
   useEffect(() => {
     if (coursesForClass.length > 0) {
       const courseName = coursesForClass[0].courseName;
+      const dept = coursesForClass[0].department || '';
       setSelectedCourse(courseName);
-      setFormData(prev => ({ ...prev, courseName, department: coursesForClass[0].department || '' }));
+      setFormData(prev => ({ ...prev, courseName, subject: courseName, department: dept }));
     } else {
       setSelectedCourse('');
-      setFormData(prev => ({ ...prev, courseName: '', department: '' }));
+      setFormData(prev => ({ ...prev, courseName: '', subject: '', department: '' }));
     }
   }, [coursesForClass]);
 
@@ -141,10 +142,8 @@ export default function GradesPage() {
          });
       });
       await Promise.all(promises); // Wait for all api requests to complete
-      const g = await gradeService.getGrades(semesterFilter); // Refresh listing records
-      setGrades(g);
       setShowForm(false); // Hide input form
-      setFormData({ courseName: '', department: '', coefficient: '1', semester: 'S1', type: 'DS' }); // Reset form metadata inputs
+      setFormData({ courseName: '', department: '', subject: '', coefficient: '1', semester: 'S1', type: 'DS' }); // Reset form metadata inputs
       setStudentScores({}); // Clear score numbers buffers
     } catch (err) { 
       console.error(err); 
@@ -224,7 +223,6 @@ export default function GradesPage() {
     };
     reader.readAsArrayBuffer(file); // Initiate file array buffer reading pipeline
   };
-
   // Submits the uploaded spreadsheet file and form meta fields to backend bulk registration endpoint
   const handleBulkSubmit = async () => {
     if (!importFile) return;
@@ -236,6 +234,7 @@ export default function GradesPage() {
       formDataObj.append('file', importFile);
       formDataObj.append('courseName', importData.courseName);
       formDataObj.append('department', importData.department);
+      formDataObj.append('subject', importData.subject);
       formDataObj.append('semester', importData.semester);
       formDataObj.append('type', importData.type);
       formDataObj.append('coefficient', importData.coefficient);
@@ -340,7 +339,7 @@ export default function GradesPage() {
                 <select value={selectedCourse} onChange={e => {
                     setSelectedCourse(e.target.value);
                     const c = coursesForClass.find(x => x.courseName === e.target.value);
-                    setFormData(prev => ({ ...prev, courseName: e.target.value, department: c?.department || prev.department }));
+                    setFormData(prev => ({ ...prev, courseName: e.target.value, subject: e.target.value, department: c?.department || prev.department }));
                   }}
                   className="w-full h-11 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 text-sm font-medium text-slate-700 dark:text-slate-200 shadow-sm"
                   disabled={!selectedClass}>
@@ -423,7 +422,7 @@ export default function GradesPage() {
                   Informations communes
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  <Input placeholder="Matière *" value={importData.courseName} onChange={(e) => setImportData({ ...importData, courseName: e.target.value })} />
+                  <Input placeholder="Matière *" value={importData.courseName} onChange={(e) => setImportData({ ...importData, courseName: e.target.value, subject: e.target.value })} />
                   <Input placeholder="Département *" value={importData.department} onChange={(e) => setImportData({ ...importData, department: e.target.value })} />
                   <select value={importData.semester} onChange={(e) => setImportData({ ...importData, semester: e.target.value })}
                     className="h-11 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-800 dark:text-slate-200 shadow-sm">

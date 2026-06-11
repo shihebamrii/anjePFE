@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"student":{"$numberInt":"1"},"semester":{"$numberInt":"1"}},"name":"student_1_semester_1","background":true}],"uuid":"8917e4075c4341beb6e51944936dae34","collectionName":"grades","type":"collection"}

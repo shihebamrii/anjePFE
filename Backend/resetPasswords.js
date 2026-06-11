@@ -13,7 +13,7 @@ import bcrypt from 'bcrypt'; // Bcrypt library to hash passwords
 dotenv.config();
 
 // Determine connection URL and define the new universal password string
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/iset_gafsa';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/anjePFE';
 const NEW_PASSWORD = 'iset123';
 
 // Main async function to reset passwords for all accounts in the database

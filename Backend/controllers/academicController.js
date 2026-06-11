@@ -167,7 +167,7 @@ function buildTeacherNameRegex(firstName, lastName) {
 // @access  Private/Teacher
 export const getTeacherCourses = async (req, res) => {
   try {
-    const { firstName, lastName } = req.user;
+    const { firstName, lastName, department } = req.user;
     if (!lastName) return res.status(400).json({ message: 'Profil enseignant incomplet.' });
 
     // Build regex to search for teacher's name across scheduled classes
@@ -184,6 +184,7 @@ export const getTeacherCourses = async (req, res) => {
           className: s.className || 'Classe inconnue',
           type: s.type || 'LECTURE',
           classId: s.classId,
+          department: department || '',
           slots: [],
         });
       }

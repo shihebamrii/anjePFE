@@ -42,7 +42,7 @@ export default function AboutPage() {
           </p>
         </div>
       </header>
-
+  
       {/* ═══════════ CONTENT ═══════════ */}
       {/* Main content body nested in a white card container, offset upwards into the header banner */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 mt-16 mt-[-40px] relative z-20">
