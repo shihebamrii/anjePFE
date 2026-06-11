@@ -1,7 +1,11 @@
+// Import Link component for client-side navigation
 import Link from 'next/link';
+// Import icons from lucide-react to represent individual service cards
 import { ArrowLeft, Sparkles, BookOpen, Shield, GraduationCap, MapPin, Mail, Phone } from 'lucide-react';
 
+// Component rendering list of platforms and student/staff services
 export default function ServicesPage() {
+  // Config list defining services offered on the portal
   const services = [
     { title: 'Centre 4C', icon: Sparkles, desc: 'Centre de Carrière et de Certification des Compétences. Préparation à la vie professionnelle.' },
     { title: 'Bibliothèque Digitale', icon: BookOpen, desc: 'Accédez à des milliers de ressources pédagogiques, thèses, et rapports de stage.' },
@@ -10,13 +14,17 @@ export default function ServicesPage() {
   ];
 
   return (
+    // Page main background wrapper
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-20">
+      {/* Branded header block with back button and descriptions */}
       <header className="bg-white border-b border-slate-200/60 pt-24 pb-16 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
+          {/* Link leading back to root path */}
           <Link href="/" className="inline-flex items-center gap-2 text-slate-400 hover:text-brand transition-colors text-sm font-semibold mb-8 group">
             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Retour à l'accueil
           </Link>
           
+          {/* Main heading and description */}
           <h1 className="font-serif text-4xl sm:text-5xl font-bold text-brand mb-6">Plateformes & <em className="text-gold" style={{ fontStyle: 'italic' }}>Services</em></h1>
           <p className="text-slate-500 text-lg max-w-2xl leading-relaxed">
             Consultez l'ensemble des services mis à disposition des étudiants et du corps enseignant de l'ISET Gafsa.
@@ -24,28 +32,36 @@ export default function ServicesPage() {
         </div>
       </header>
 
+      {/* Services listing main body */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 mt-16">
+        {/* Responsive grid displaying each service */}
         <div className="grid md:grid-cols-2 gap-8 mb-20">
           {services.map((svc, i) => (
+            // Indivudual service container
             <div key={i} className="bg-white p-8 rounded-3xl border border-slate-200/60 shadow-sm hover:shadow-lg transition-all flex gap-6 items-start group">
+              {/* Dynamic Icon box with hover transition */}
               <div className="w-14 h-14 rounded-2xl bg-brand/5 text-brand flex items-center justify-center shrink-0 group-hover:bg-brand group-hover:text-white transition-colors">
                 <svc.icon size={24} />
               </div>
+              {/* Text descriptions */}
               <div>
                 <h3 className="font-bold text-xl text-brand mb-2">{svc.title}</h3>
                 <p className="text-slate-500 text-sm leading-relaxed mb-4">{svc.desc}</p>
+                {/* Dynamic redirect indicator */}
                 <button className="text-[10px] font-bold uppercase tracking-widest text-blue-600 hover:text-blue-800 transition-colors">Accéder →</button>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Generic Contact Card for the page footer */}
+        {/* Branded footer banner showing direct school contact numbers */}
         <div className="bg-brand rounded-[2rem] p-10 text-white flex flex-col md:flex-row justify-between items-center shadow-xl">
+          {/* CTA Header info */}
           <div className="mb-6 md:mb-0 text-center md:text-left">
             <h4 className="font-serif text-2xl mb-2">Besoin d'aide avec un service ?</h4>
             <p className="text-white/60 text-sm">Notre équipe de scolarité est à votre disposition.</p>
           </div>
+          {/* Quick contact credentials block */}
           <div className="flex gap-6 text-sm text-white/80">
             <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-xl"><Phone size={16}/> 76 211 500</div>
             <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-xl"><Mail size={16}/> contact@isetgf.rnu.tn</div>

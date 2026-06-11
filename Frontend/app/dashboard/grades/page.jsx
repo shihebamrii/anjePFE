@@ -1,84 +1,97 @@
-'use client';
+'use client'; // Tells Next.js to render this component on the client-side (in the browser)
 
-import { useState, useEffect, useMemo } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { LoadingPage } from '@/components/ui/loading';
-import { gradeService } from '@/services/gradeService';
-import { complaintService } from '@/services/complaintService';
-import { academicService } from '@/services/academicService';
-import { attendanceService } from '@/services/attendanceService';
-import { calculateAverage, getGradeColor, formatDate } from '@/lib/utils';
-import { GraduationCap, Plus, Trash2, TrendingUp, X, Upload, Download, FileSpreadsheet, AlertCircle, CheckCircle2, AlertTriangle } from 'lucide-react';
-import * as XLSX from 'xlsx';
+import { useState, useEffect, useMemo } from 'react'; // React hooks for component state, side effects, and caching calculated values
+import { useAuth } from '@/context/AuthContext'; // Custom hook to access authentication state and user details
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; // Custom UI component wrappers for cards
+import { Badge } from '@/components/ui/badge'; // Custom badge label pill component
+import { Button } from '@/components/ui/button'; // Custom clickable button component
+import { Input } from '@/components/ui/input'; // Custom text/number input field component
+import { LoadingPage } from '@/components/ui/loading'; // Custom loading screen page wrapper
+import { gradeService } from '@/services/gradeService'; // API services to fetch and create student grades
+import { complaintService } from '@/services/complaintService'; // API services to submit notes complaints
+import { academicService } from '@/services/academicService'; // API services to fetch courses allocated to teachers
+import { attendanceService } from '@/services/attendanceService'; // API services to lookup class student directories
+import { calculateAverage, getGradeColor, formatDate } from '@/lib/utils'; // Helpers for averaging grades, coloring score badges, and formatting dates
+import { GraduationCap, Plus, Trash2, TrendingUp, X, Upload, Download, FileSpreadsheet, AlertCircle, CheckCircle2, AlertTriangle } from 'lucide-react'; // Vector icons assets
+import * as XLSX from 'xlsx'; // Spreadsheet helper library to parse Excel uploads and generate templates
 
 export default function GradesPage() {
-  const { user, isStudent, isTeacher, isAdmin } = useAuth();
-  const [grades, setGrades] = useState([]);
-  const [teacherCourses, setTeacherCourses] = useState([]);
-  const [selectedClass, setSelectedClass] = useState('');
-  const [selectedCourse, setSelectedCourse] = useState('');
-  const [students, setStudents] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [semesterFilter, setSemesterFilter] = useState('');
-  const [showForm, setShowForm] = useState(false);
+  // --- Auth & Role Checks ---
+  const { user, isStudent, isTeacher, isAdmin } = useAuth(); // Extract user identity and role flags
+
+  // --- React State Declarations ---
+  const [grades, setGrades] = useState([]); // List of grades retrieved from the server
+  const [teacherCourses, setTeacherCourses] = useState([]); // List of courses assigned to the logged-in teacher
+  const [selectedClass, setSelectedClass] = useState(''); // Holds className selected filter for adding grades
+  const [selectedCourse, setSelectedCourse] = useState(''); // Holds courseName selected filter for adding grades
+  const [students, setStudents] = useState([]); // Student lists belonging to the targeted selected class
+  const [loading, setLoading] = useState(true); // Tracks whether the page is fetching its initial data
+  const [semesterFilter, setSemesterFilter] = useState(''); // Active semester query filter ('', 'S1', 'S2')
+  const [showForm, setShowForm] = useState(false); // Controls visibility toggle of single grade manual add form card
+  
+  // Single grade configuration metadata state
   const [formData, setFormData] = useState({
     courseName: '', department: '', coefficient: '1', semester: 'S1', type: 'DS'
   });
-  const [studentScores, setStudentScores] = useState({});
-  const [addingGrades, setAddingGrades] = useState(false);
+  
+  const [studentScores, setStudentScores] = useState({}); // Dictionary mapping student IDs to numerical input scores
+  const [addingGrades, setAddingGrades] = useState(false); // Indicates if manual grade API list submission is processing
 
-  // Bulk import state
-  const [showImportModal, setShowImportModal] = useState(false);
+  // --- Excel Bulk Import Modal States ---
+  const [showImportModal, setShowImportModal] = useState(false); // Controls visibility of Excel upload dialog popup
   const [importData, setImportData] = useState({
     courseName: '', department: '', semester: 'S1', type: 'DS', coefficient: '1'
   });
-  const [parsedRows, setParsedRows] = useState([]);
-  const [importFile, setImportFile] = useState(null);
-  const [importing, setImporting] = useState(false);
-  const [importResult, setImportResult] = useState(null);
+  const [parsedRows, setParsedRows] = useState([]); // Buffer holding parsed excel rows data for preview table
+  const [importFile, setImportFile] = useState(null); // Reference to uploaded Excel file object
+  const [importing, setImporting] = useState(false); // Indicates if backend Excel upload request is pending
+  const [importResult, setImportResult] = useState(null); // Response summary returned by backend upload endpoint (success count / error lists)
 
-  // Complaint state (student)
-  const [complaintGradeId, setComplaintGradeId] = useState(null);
-  const [complaintReason, setComplaintReason] = useState('');
-  const [submittingComplaint, setSubmittingComplaint] = useState(false);
-  const [complainedGrades, setComplainedGrades] = useState(new Set());
+  // --- Student Notes Complaint States ---
+  const [complaintGradeId, setComplaintGradeId] = useState(null); // Active grade database ID being complained about (null if closed)
+  const [complaintReason, setComplaintReason] = useState(''); // Text comment explanation typed by the student
+  const [submittingComplaint, setSubmittingComplaint] = useState(false); // Indicates if the complaint API request is pending
+  const [complainedGrades, setComplainedGrades] = useState(new Set()); // Set tracking grades IDs already complained about during current session
 
+  // Fetch initial data (grades list and teacher assignments) once on mount or when filters change
   useEffect(() => {
     async function fetchData() {
       try {
         const [g, courses] = await Promise.all([
-          gradeService.getGrades(semesterFilter),
-          (isTeacher || isAdmin) ? academicService.getTeacherCourses().catch(() => []) : Promise.resolve([])
+          gradeService.getGrades(semesterFilter), // Query active semester grades
+          (isTeacher || isAdmin) ? academicService.getTeacherCourses().catch(() => []) : Promise.resolve([]) // Query teacher allocation mapping
         ]);
         setGrades(g);
         setTeacherCourses(courses);
-      } catch (err) { console.error(err); }
-      finally { setLoading(false); }
+      } catch (err) { 
+        console.error(err); 
+      } finally { 
+        setLoading(false); // Terminate full page loading state
+      }
     }
     fetchData();
-  }, [semesterFilter, isTeacher, isAdmin]);
+  }, [semesterFilter, isTeacher, isAdmin]); // Refresh whenever semester filter or roles change
 
+  // Calculate unique list of classes assigned to teacher for dropdown picker
   const classNames = useMemo(() => {
     const names = new Set(teacherCourses.map(c => c.className));
     return Array.from(names).sort();
   }, [teacherCourses]);
 
+  // Filters assigned courses belonging to the selected class picker option
   const coursesForClass = useMemo(() => {
     if (!selectedClass) return [];
     const courseNames = new Set();
     return teacherCourses
       .filter(c => c.className === selectedClass)
       .filter(c => {
-        if (courseNames.has(c.courseName)) return false;
+        if (courseNames.has(c.courseName)) return false; // Prevent duplicates in drop down option
         courseNames.add(c.courseName);
         return true;
       });
   }, [teacherCourses, selectedClass]);
 
+  // Query student roster list when targeted class dropdown changes, pre-filling score inputs dictionary to empty strings
   useEffect(() => {
     if (!selectedClass) {
       setStudents([]);
@@ -87,16 +100,20 @@ export default function GradesPage() {
     }
     async function fetchStudents() {
       try {
-        const s = await attendanceService.getStudentsByClass(selectedClass);
+        const s = await attendanceService.getStudentsByClass(selectedClass); // Fetch student roster
         setStudents(s);
         const scores = {};
-        s.forEach(student => { scores[student._id] = ''; });
+        s.forEach(student => { scores[student._id] = ''; }); // Reset score buffer mapping
         setStudentScores(scores);
-      } catch (err) { console.error(err); setStudents([]); }
+      } catch (err) { 
+        console.error(err); 
+        setStudents([]); 
+      }
     }
     fetchStudents();
   }, [selectedClass]);
 
+  // Automatically select the first course in the filtered options list when the selected class changes
   useEffect(() => {
     if (coursesForClass.length > 0) {
       const courseName = coursesForClass[0].courseName;
@@ -108,12 +125,14 @@ export default function GradesPage() {
     }
   }, [coursesForClass]);
 
+  // Submits a list of manually entered student grades to the backend API parallelly
   const handleAddGradesList = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Stop standard browser page navigation submit event
     setAddingGrades(true);
     try {
+      // Create creation API calls promises array for each student with entered score
       const promises = Object.entries(studentScores).map(([studentId, score]) => {
-         if (score === '' || score === undefined) return Promise.resolve();
+         if (score === '' || score === undefined) return Promise.resolve(); // Skip empty entries
          return gradeService.addGrade({ 
            ...formData, 
            student: studentId, 
@@ -121,56 +140,65 @@ export default function GradesPage() {
            coefficient: Number(formData.coefficient) 
          });
       });
-      await Promise.all(promises);
-      const g = await gradeService.getGrades(semesterFilter);
+      await Promise.all(promises); // Wait for all api requests to complete
+      const g = await gradeService.getGrades(semesterFilter); // Refresh listing records
       setGrades(g);
-      setShowForm(false);
-      setFormData({ courseName: '', department: '', coefficient: '1', semester: 'S1', type: 'DS' });
-      setStudentScores({});
-    } catch (err) { console.error(err); }
-    finally { setAddingGrades(false); }
+      setShowForm(false); // Hide input form
+      setFormData({ courseName: '', department: '', coefficient: '1', semester: 'S1', type: 'DS' }); // Reset form metadata inputs
+      setStudentScores({}); // Clear score numbers buffers
+    } catch (err) { 
+      console.error(err); 
+    } finally { 
+      setAddingGrades(false); 
+    }
   };
 
+  // Deletes a grade record from database after user confirms safety
   const handleDelete = async (id) => {
-    if (!confirm('Supprimer cette note ?')) return;
+    if (!confirm('Supprimer cette note ?')) return; // Safety verification check
     try {
-      await gradeService.deleteGrade(id);
-      setGrades(grades.filter(g => g._id !== id));
-    } catch (err) { console.error(err); }
+      await gradeService.deleteGrade(id); // Send DELETE query request
+      setGrades(grades.filter(g => g._id !== id)); // Remove element from state array
+    } catch (err) { 
+      console.error(err); 
+    }
   };
 
-  // Complaint handler
+  // Submits a student complaint explanation for a specific grade record
   const handleSubmitComplaint = async () => {
-    if (!complaintReason.trim() || !complaintGradeId) return;
+    if (!complaintReason.trim() || !complaintGradeId) return; // Exit if input or identifier is empty
     setSubmittingComplaint(true);
     try {
+      // API call to create complaint record on backend
       await complaintService.createComplaint({ gradeId: complaintGradeId, reason: complaintReason });
-      setComplainedGrades(prev => new Set([...prev, complaintGradeId]));
-      setComplaintGradeId(null);
-      setComplaintReason('');
+      setComplainedGrades(prev => new Set([...prev, complaintGradeId])); // Add grade ID to local complaining session set
+      setComplaintGradeId(null); // Close popup modal
+      setComplaintReason(''); // Reset text input explanation
     } catch (err) {
       console.error(err);
-      alert(err?.response?.data?.message || 'Erreur lors de la soumission');
+      alert(err?.response?.data?.message || 'Erreur lors de la soumission'); // Show warning message
     } finally {
       setSubmittingComplaint(false);
     }
   };
 
-  // --- Bulk Import Functions ---
+  // --- Bulk Import Helpers ---
+
+  // Downloads sample Excel spreadsheet with standard columns schema
   const handleDownloadTemplate = () => {
     const templateData = [
-      { studentId: '', score: '' }
+      { studentId: '', score: '' } // Define column names structure
     ];
-    const ws = XLSX.utils.json_to_sheet(templateData);
-    // Set column widths
-    ws['!cols'] = [{ wch: 20 }, { wch: 10 }];
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Notes');
-    XLSX.writeFile(wb, 'template_notes.xlsx');
+    const ws = XLSX.utils.json_to_sheet(templateData); // Convert object structure to Excel worksheet
+    ws['!cols'] = [{ wch: 20 }, { wch: 10 }]; // Define sheet columns widths layouts
+    const wb = XLSX.utils.book_new(); // Instantiate empty workbook virtual object
+    XLSX.utils.book_append_sheet(wb, ws, 'Notes'); // Append worksheet tab
+    XLSX.writeFile(wb, 'template_notes.xlsx'); // Trigger automatic browser file download
   };
 
+  // Parses user uploaded Excel spreadsheet on client side to show dynamic upload previews
   const handleFileSelect = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files[0]; // Get file reference
     if (!file) return;
     setImportFile(file);
     setImportResult(null);
@@ -178,12 +206,14 @@ export default function GradesPage() {
     const reader = new FileReader();
     reader.onload = (evt) => {
       try {
-        const workbook = XLSX.read(evt.target.result, { type: 'array' });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(sheet);
+        const workbook = XLSX.read(evt.target.result, { type: 'array' }); // Parse binary data array
+        const sheet = workbook.Sheets[workbook.SheetNames[0]]; // Get the first worksheet object
+        const rows = XLSX.utils.sheet_to_json(sheet); // Extract records list rows
+        
+        // Map and validate row contents (checks for non-empty ID and score boundaries between 0 and 20)
         setParsedRows(rows.map((row, i) => ({
           ...row,
-          _rowNum: i + 2,
+          _rowNum: i + 2, // Convert to 1-indexed line offset skipping header
           _valid: !!(row.studentId && row.score !== undefined && row.score !== '' && Number(row.score) >= 0 && Number(row.score) <= 20),
           _error: !row.studentId ? 'ID manquant' : (row.score === undefined || row.score === '' || isNaN(Number(row.score)) || Number(row.score) < 0 || Number(row.score) > 20) ? 'Score invalide' : null,
         })));
@@ -192,36 +222,40 @@ export default function GradesPage() {
         setParsedRows([]);
       }
     };
-    reader.readAsArrayBuffer(file);
+    reader.readAsArrayBuffer(file); // Initiate file array buffer reading pipeline
   };
 
+  // Submits the uploaded spreadsheet file and form meta fields to backend bulk registration endpoint
   const handleBulkSubmit = async () => {
     if (!importFile) return;
     setImporting(true);
     setImportResult(null);
     try {
-      const formData = new FormData();
-      formData.append('file', importFile);
-      formData.append('courseName', importData.courseName);
-      formData.append('department', importData.department);
-      formData.append('semester', importData.semester);
-      formData.append('type', importData.type);
-      formData.append('coefficient', importData.coefficient);
+      // Build standard FormData object to carry file bytes alongside configuration inputs
+      const formDataObj = new FormData();
+      formDataObj.append('file', importFile);
+      formDataObj.append('courseName', importData.courseName);
+      formDataObj.append('department', importData.department);
+      formDataObj.append('semester', importData.semester);
+      formDataObj.append('type', importData.type);
+      formDataObj.append('coefficient', importData.coefficient);
 
-      const result = await gradeService.bulkUploadGrades(formData);
-      setImportResult(result);
+      const result = await gradeService.bulkUploadGrades(formDataObj); // Post call
+      setImportResult(result); // Store outcome reports (success vs error rows list)
 
       // Refresh grades list
       const g = await gradeService.getGrades(semesterFilter);
       setGrades(g);
     } catch (err) {
       console.error(err);
+      // Construct fallback error reports if api call crashes entirely
       setImportResult({ created: 0, errors: [{ row: '-', studentId: '-', reason: err?.response?.data?.message || 'Erreur serveur' }] });
     } finally {
       setImporting(false);
     }
   };
 
+  // Resets import modal variables and shuts overlay dialog down
   const closeImportModal = () => {
     setShowImportModal(false);
     setParsedRows([]);
@@ -230,15 +264,18 @@ export default function GradesPage() {
     setImportData({ courseName: '', department: '', semester: 'S1', type: 'DS', coefficient: '1' });
   };
 
+  // Render full screen spinner page while waiting for database queries to complete
   if (loading) return <LoadingPage />;
 
-  const avg = calculateAverage(grades);
-  const validRows = parsedRows.filter(r => r._valid).length;
-  const invalidRows = parsedRows.filter(r => !r._valid).length;
-  const canSubmit = importFile && importData.courseName && importData.department && validRows > 0;
+  // Memoized values calculations
+  const avg = calculateAverage(grades); // Get general student average score
+  const validRows = parsedRows.filter(r => r._valid).length; // Count of valid preview rows
+  const invalidRows = parsedRows.filter(r => !r._valid).length; // Count of invalid preview rows
+  const canSubmit = importFile && importData.courseName && importData.department && validRows > 0; // Check if spreadsheet upload button is clickable
 
   return (
     <div className="space-y-6">
+      {/* Header element section with Title icons, descriptions and toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2 tracking-tight">
@@ -250,12 +287,14 @@ export default function GradesPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          {/* Semester selection filter query dropdown */}
           <select value={semesterFilter} onChange={(e) => setSemesterFilter(e.target.value)}
             className="h-10 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-800 dark:text-slate-200 shadow-sm focus:ring-2 focus:ring-accent/30 focus:border-accent outline-none">
             <option value="">Tous les semestres</option>
             <option value="S1">Semestre 1</option>
             <option value="S2">Semestre 2</option>
           </select>
+          {/* Display CRUD action buttons toggles only for Teachers / Admin roles */}
           {(isTeacher || isAdmin) && (
             <>
               <Button onClick={() => { setShowImportModal(true); setShowForm(false); }} size="sm" variant="outline" className="gap-1.5">
@@ -269,7 +308,7 @@ export default function GradesPage() {
         </div>
       </div>
 
-      {/* Average */}
+      {/* Student general score average card */}
       {isStudent && grades.length > 0 && (
         <Card className="border-0">
           <CardContent className="p-5 flex items-center gap-4">
@@ -284,18 +323,20 @@ export default function GradesPage() {
         </Card>
       )}
 
-      {/* Single Grade Form */}
+      {/* Manual single/list entry grade card (Teacher view) */}
       {showForm && (isTeacher || isAdmin) && (
         <Card className="animate-scale-in border-2 border-accent">
           <CardHeader className="pb-3"><CardTitle className="text-[15px]">Nouvelle Note</CardTitle></CardHeader>
           <CardContent>
             <form onSubmit={handleAddGradesList} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Target Class dropdown selector */}
                 <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)}
                   className="w-full h-11 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 text-sm font-medium text-slate-700 dark:text-slate-200 shadow-sm">
                   <option value="">— Choisir une classe —</option>
                   {classNames.map(name => <option key={name} value={name}>{name}</option>)}
                 </select>
+                {/* Subject / Course selection list (depends on chosen Class) */}
                 <select value={selectedCourse} onChange={e => {
                     setSelectedCourse(e.target.value);
                     const c = coursesForClass.find(x => x.courseName === e.target.value);
@@ -306,12 +347,15 @@ export default function GradesPage() {
                   <option value="">— Choisir un cours —</option>
                   {coursesForClass.map((c, i) => <option key={i} value={c.courseName}>{c.courseName}</option>)}
                 </select>
+                {/* Score coefficient input field */}
                 <Input type="number" placeholder="Coefficient" min="0.5" step="0.5" value={formData.coefficient} onChange={(e) => setFormData({ ...formData, coefficient: e.target.value })} required />
+                {/* Semester selection picker */}
                 <select value={formData.semester} onChange={(e) => setFormData({ ...formData, semester: e.target.value })}
                   className="h-11 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-800 dark:text-slate-200 shadow-sm">
                   <option value="S1">Semestre 1</option>
                   <option value="S2">Semestre 2</option>
                 </select>
+                {/* Evaluation Type selector (Exam, DS, TP, etc.) */}
                 <select value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                   className="h-11 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-800 dark:text-slate-200 shadow-sm">
                   <option value="DS">DS</option>
@@ -322,12 +366,14 @@ export default function GradesPage() {
                 </select>
               </div>
               
+              {/* Student roster mapping inputs list */}
               <div>
                 <h3 className="font-semibold text-sm text-slate-700 dark:text-slate-300 mb-3 border-b pb-2">Liste des étudiants</h3>
                 <div className="space-y-2 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
                   {students.map(s => (
                     <div key={s._id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
                       <span className="text-sm font-medium text-slate-800 dark:text-slate-200">{s.firstName} {s.lastName}</span>
+                      {/* Score numerical input for student */}
                       <Input type="number" placeholder="Note (0-20)" min="0" max="20" step="0.25" className="w-32 h-9"
                         value={studentScores[s._id] !== undefined ? studentScores[s._id] : ''}
                         onChange={(e) => setStudentScores(prev => ({...prev, [s._id]: e.target.value}))}
@@ -348,11 +394,12 @@ export default function GradesPage() {
         </Card>
       )}
 
-      {/* ─── IMPORT MODAL ─── */}
+      {/* Excel Spreadsheet Bulk Import Modal Popup overlay */}
       {showImportModal && (isTeacher || isAdmin) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={(e) => { if (e.target === e.currentTarget) closeImportModal(); }}>
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-700">
-            {/* Modal Header */}
+            
+            {/* Modal dialog header */}
             <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-md">
@@ -369,7 +416,7 @@ export default function GradesPage() {
             </div>
 
             <div className="p-6 space-y-6">
-              {/* Step 1: Common Fields */}
+              {/* Step 1: Configuration Fields metadata */}
               <div>
                 <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-accent/10 text-accent text-xs font-bold flex items-center justify-center">1</span>
@@ -395,7 +442,7 @@ export default function GradesPage() {
                 </div>
               </div>
 
-              {/* Step 2: Template & Upload */}
+              {/* Step 2: Excel file upload attachment listener */}
               <div>
                 <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-accent/10 text-accent text-xs font-bold flex items-center justify-center">2</span>
@@ -417,7 +464,7 @@ export default function GradesPage() {
                 </div>
               </div>
 
-              {/* Step 3: Preview */}
+              {/* Step 3: Excel parsing rows preview list */}
               {parsedRows.length > 0 && (
                 <div>
                   <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
@@ -466,7 +513,7 @@ export default function GradesPage() {
                 </div>
               )}
 
-              {/* Import Result */}
+              {/* Server-side upload report summary values */}
               {importResult && (
                 <div className={`p-4 rounded-xl border ${importResult.created > 0 ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800' : 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800'}`}>
                   <div className="flex items-center gap-2 mb-2">
@@ -493,7 +540,7 @@ export default function GradesPage() {
               )}
             </div>
 
-            {/* Modal Footer */}
+            {/* Import Dialog action triggers */}
             <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-100 dark:border-slate-800">
               <Button type="button" variant="ghost" size="sm" onClick={closeImportModal}>
                 Annuler
@@ -516,7 +563,7 @@ export default function GradesPage() {
         </div>
       )}
 
-      {/* Table */}
+      {/* Grades directory table layout grid */}
       <Card className="border-0">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
@@ -550,11 +597,13 @@ export default function GradesPage() {
                     <td className="p-4 text-sm text-slate-500">{grade.semester}</td>
                     <td className="p-4 text-sm text-slate-400">{formatDate(grade.date)}</td>
                     <td className="p-4 text-right">
+                      {/* Trash action button displayed if user is teacher or admin */}
                       {(isTeacher || isAdmin) && (
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950" onClick={() => handleDelete(grade._id)}>
                           <Trash2 size={14} />
                         </Button>
                       )}
+                      {/* Complaint action button displayed if user is student */}
                       {isStudent && (
                         complainedGrades.has(grade._id) ? (
                           <span className="text-[11px] text-amber-500 font-semibold flex items-center justify-end gap-1"><AlertTriangle size={12} /> Réclamée</span>
@@ -569,12 +618,13 @@ export default function GradesPage() {
                 ))}
               </tbody>
             </table>
+            {/* Fallback empty view placeholder */}
             {grades.length === 0 && <p className="text-sm text-slate-400 text-center py-12">Aucune note disponible</p>}
           </div>
         </CardContent>
       </Card>
 
-      {/* Complaint Modal */}
+      {/* Student Complaint overlay prompt modal */}
       {complaintGradeId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={(e) => { if (e.target === e.currentTarget) setComplaintGradeId(null); }}>
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md border border-slate-200 dark:border-slate-700">
@@ -620,3 +670,4 @@ export default function GradesPage() {
     </div>
   );
 }
+

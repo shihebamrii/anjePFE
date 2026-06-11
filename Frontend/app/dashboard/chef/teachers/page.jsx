@@ -1,19 +1,22 @@
-'use client';
+'use client'; // Client interactive state component directive
 
-import { useState, useEffect, useMemo } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { LoadingPage } from '@/components/ui/loading';
-import { departmentService } from '@/services/departmentService';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { getInitials } from '@/lib/utils';
+import { useState, useEffect, useMemo } from 'react'; // React hooks for local state, updates and performance tracking
+import { Card, CardContent } from '@/components/ui/card'; // Card block layouts
+import { Badge } from '@/components/ui/badge'; // Label tags
+import { Input } from '@/components/ui/input'; // Input text boxes
+import { Button } from '@/components/ui/button'; // Reusable buttons
+import { LoadingPage } from '@/components/ui/loading'; // Dynamic fullscreen page loader
+import { departmentService } from '@/services/departmentService'; // Services module to interact with department API calls
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'; // Circular profile avatar images fallback
+import { getInitials } from '@/lib/utils'; // Initials generator helper
+// Dialog modals wrappers
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from '@/components/ui/dialog';
+// Lucide icons representing entities, queries, email coordinates and buttons actions
 import { BookOpen, Search, Mail, Users, Plus, Pencil, Trash2 } from 'lucide-react';
 
+// Configuration maps associating grade abbreviations to specific styling color classes
 const GRADE_COLORS = {
   'Maît.Tech': 'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950 dark:text-violet-400 dark:border-violet-800',
   'Tech': 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-400 dark:border-blue-800',
@@ -23,6 +26,7 @@ const GRADE_COLORS = {
   'Prof.Em': 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950 dark:text-indigo-400 dark:border-indigo-800',
 };
 
+// Selection options representing teacher academic grades inside the institution
 const GRADE_OPTIONS = [
   { value: 'Maître Technologue', abbr: 'Maît.Tech' },
   { value: 'Technologue', abbr: 'Tech' },
@@ -32,27 +36,30 @@ const GRADE_OPTIONS = [
   { value: 'Professeur Émérite', abbr: 'Prof.Em' },
 ];
 
+// Form initial state values template
 const emptyForm = { firstName: '', lastName: '', email: '', grade: '', gradeAbbr: '', specialization: '' };
 
 export default function TeachersPage() {
-  const [departments, setDepartments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [gradeFilter, setGradeFilter] = useState('');
+  const [departments, setDepartments] = useState([]); // Store fetched departments configuration list
+  const [loading, setLoading] = useState(true); // Tracking fetching status
+  const [search, setSearch] = useState(''); // Text search query string filtering lists
+  const [gradeFilter, setGradeFilter] = useState(''); // Active grade category filter selection
 
-  // CRUD state
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [editingTeacher, setEditingTeacher] = useState(null);
-  const [deletingTeacher, setDeletingTeacher] = useState(null);
-  const [form, setForm] = useState(emptyForm);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
+  // CRUD dialog modals controls states
+  const [dialogOpen, setDialogOpen] = useState(false); // Controls add/edit modal popup window
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false); // Controls delete confirmation dialog modal
+  const [editingTeacher, setEditingTeacher] = useState(null); // Reference to teacher object currently being modified
+  const [deletingTeacher, setDeletingTeacher] = useState(null); // Reference to teacher object target designated for removal
+  const [form, setForm] = useState(emptyForm); // Active input values within modals
+  const [saving, setSaving] = useState(false); // API request save progress loader state
+  const [error, setError] = useState(''); // Modal error alerts text label
 
+  // Load department info on initial component mount
   useEffect(() => {
     fetchData();
   }, []);
 
+  // Async query fetching active chief's department details
   async function fetchData() {
     try {
       const data = await departmentService.getMyDepartment();
@@ -64,6 +71,7 @@ export default function TeachersPage() {
   const dept = departments[0];
   const teachers = dept?.teachers || [];
 
+  // Compute unique grade abbreviations from active teachers list
   const grades = useMemo(() => {
     const gradeSet = new Set(teachers.map(t => t.gradeAbbr).filter(Boolean));
     return ['', ...Array.from(gradeSet).sort()];
@@ -71,6 +79,7 @@ export default function TeachersPage() {
 
   const gradeLabels = { '': 'Tous', 'Maît.Tech': 'Maître Technologue', 'Tech': 'Technologue', 'Ens.Sec': 'Ens. Secondaire', 'Vac': 'Vacataire', 'Ing': 'Ingénieur', 'Prof.Em': 'Prof. Émérite' };
 
+  // Filter teachers list dynamically based on search keyword matching names/email/specialty and grade category selections
   const filtered = useMemo(() => {
     return teachers.filter(t => {
       const matchSearch = `${t.firstName} ${t.lastName} ${t.email} ${t.specialization}`.toLowerCase().includes(search.toLowerCase());
@@ -79,15 +88,15 @@ export default function TeachersPage() {
     });
   }, [teachers, search, gradeFilter]);
 
-  // Open add dialog
+  // Open modal in creation mode
   function handleAdd() {
     setEditingTeacher(null);
-    setForm(emptyForm);
+    setForm(emptyForm); // Reset form state
     setError('');
     setDialogOpen(true);
   }
 
-  // Open edit dialog
+  // Open modal in edit mode with prefilled details
   function handleEdit(teacher) {
     setEditingTeacher(teacher);
     setForm({
@@ -102,7 +111,7 @@ export default function TeachersPage() {
     setDialogOpen(true);
   }
 
-  // Save (create or update)
+  // Commit form updates back to server database
   async function handleSave() {
     if (!form.firstName.trim() || !form.lastName.trim()) {
       setError('Nom et prénom sont requis.');
@@ -116,7 +125,7 @@ export default function TeachersPage() {
       } else {
         await departmentService.addTeacher(form);
       }
-      setDialogOpen(false);
+      setDialogOpen(false); // Dismiss modal window
       setLoading(true);
       await fetchData();
     } catch (err) {
@@ -126,18 +135,19 @@ export default function TeachersPage() {
     }
   }
 
-  // Delete
+  // Trigger delete confirmation prompt
   function handleDeleteClick(teacher) {
     setDeletingTeacher(teacher);
     setDeleteDialogOpen(true);
   }
 
+  // Perform teacher account deletion task
   async function handleDeleteConfirm() {
     if (!deletingTeacher) return;
     setSaving(true);
     try {
       await departmentService.deleteTeacher(deletingTeacher._id);
-      setDeleteDialogOpen(false);
+      setDeleteDialogOpen(false); // Close dialog
       setDeletingTeacher(null);
       setLoading(true);
       await fetchData();
@@ -148,6 +158,7 @@ export default function TeachersPage() {
     }
   }
 
+  // Handle grade selection change in dynamic form dropdown selector
   function handleGradeSelect(e) {
     const opt = GRADE_OPTIONS.find(o => o.abbr === e.target.value);
     setForm(f => ({ ...f, grade: opt?.value || '', gradeAbbr: opt?.abbr || '' }));
@@ -158,6 +169,7 @@ export default function TeachersPage() {
 
   return (
     <div className="space-y-6">
+      {/* Title section and Add Teacher button trigger */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2 tracking-tight">
@@ -172,7 +184,7 @@ export default function TeachersPage() {
         </Button>
       </div>
 
-      {/* Filters */}
+      {/* Dynamic search input and grade category select filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
@@ -180,6 +192,7 @@ export default function TeachersPage() {
         </div>
         <div className="flex flex-wrap gap-2">
           {grades.map(grade => (
+            // Selectable grade category filter buttons
             <button key={grade} onClick={() => setGradeFilter(grade)}
               className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                 gradeFilter === grade ? 'bg-accent text-white shadow-md shadow-accent/20' : 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 shadow-sm'
@@ -188,7 +201,7 @@ export default function TeachersPage() {
         </div>
       </div>
 
-      {/* Table */}
+      {/* Table displaying matching teachers list */}
       <Card className="border-0">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
@@ -249,7 +262,7 @@ export default function TeachersPage() {
       </Card>
       <p className="text-xs text-slate-400 text-center">{filtered.length} enseignant{filtered.length !== 1 ? 's' : ''} affiché{filtered.length !== 1 ? 's' : ''}</p>
 
-      {/* Add/Edit Dialog */}
+      {/* Teacher Create and Edit Modal popup */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -296,7 +309,7 @@ export default function TeachersPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete confirmation alert block */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>

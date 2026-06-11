@@ -1,14 +1,16 @@
-'use client';
+'use client'; // Directs Next.js that this is a client-side component using state and hooks
 
-import { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import dynamic from 'next/dynamic';
+import { useState, useEffect, useRef } from 'react'; // React hooks for component state, lifecycle, and element reference
+import Link from 'next/link'; // Next.js routing wrapper for optimized transitions
+import Image from 'next/image'; // Next.js image optimizer for fast loading
+import dynamic from 'next/dynamic'; // Dynamic import helper to disable SSR for map components
 
+// Dynamically load MapComponent only on the client-side to prevent server-side hydration mismatches
 const MapComponent = dynamic(() => import('@/components/home/MapComponent'), {
-  ssr: false,
+  ssr: false, // Turn off server-side rendering
   loading: () => <div className="w-full h-full bg-slate-100 animate-pulse rounded-2xl flex items-center justify-center text-slate-400 font-bold">Chargement de la carte...</div>
 });
+// Import a set of beautiful interface icons from the lucide-react library
 import {
   Building2, GraduationCap, Users, Briefcase, Newspaper,
   ArrowRight, BookOpen, Calendar, ChevronRight, Sparkles,
@@ -17,25 +19,27 @@ import {
   Search, FileText, LayoutGrid, Info, ExternalLink, ArrowUpRight, Menu, ChevronDown,
   Quote, Play, Monitor, Cpu, Wrench, FlaskConical, BarChart3
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/button'; // Import custom design system button primitive
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,
-} from "@/components/ui/sheet";
+} from "@/components/ui/sheet"; // Slide-out mobile navigation drawer
 import {
   NavigationMenu, NavigationMenuContent, NavigationMenuItem,
   NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { newsService } from '@/services/newsService';
-import { eventService } from '@/services/eventService';
-import { departmentService } from '@/services/departmentService';
+} from "@/components/ui/navigation-menu"; // Premium desktop dropdown navigation menu header
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"; // Accordion layout for FAQ items
+import { newsService } from '@/services/newsService'; // Service to fetch news posts from backend api
+import { eventService } from '@/services/eventService'; // Service to fetch events calendar from backend api
+import { departmentService } from '@/services/departmentService'; // Service to fetch study departments from backend api
 
 /* ── Animated Counter Hook ── */
+// Custom hook to increment counters smoothly when scrolling into view
 function useCountUp(end, duration = 2000, startOnView = true) {
-  const [count, setCount] = useState(0);
-  const [started, setStarted] = useState(!startOnView);
-  const ref = useRef(null);
+  const [count, setCount] = useState(0); // Current dynamic numeric counter value
+  const [started, setStarted] = useState(!startOnView); // Whether the counter increment logic has initialized
+  const ref = useRef(null); // Reference to the target DOM node to observe scroll entry
 
+  // Observe element visibility on screen before trigger counting
   useEffect(() => {
     if (!startOnView) return;
     const observer = new IntersectionObserver(
@@ -46,13 +50,14 @@ function useCountUp(end, duration = 2000, startOnView = true) {
     return () => observer.disconnect();
   }, [startOnView]);
 
+  // Interval-based counter increments reaching target values smoothly
   useEffect(() => {
     if (!started) return;
     let start = 0;
-    const step = end / (duration / 16);
+    const step = end / (duration / 16); // Compute delta to increment roughly every frame (~16ms)
     const timer = setInterval(() => {
       start += step;
-      if (start >= end) { setCount(end); clearInterval(timer); }
+      if (start >= end) { setCount(end); clearInterval(timer); } // Clamp count to target maximum
       else setCount(Math.floor(start));
     }, 16);
     return () => clearInterval(timer);
@@ -62,31 +67,36 @@ function useCountUp(end, duration = 2000, startOnView = true) {
 }
 
 /* ── Stat Counter Component ── */
+// Renders individual statistics card with numeric progress count-up
 function StatCounter({ value, label, suffix = '+' }) {
-  const numericValue = parseInt(value.replace(/[^0-9]/g, ''));
+  const numericValue = parseInt(value.replace(/[^0-9]/g, '')); // Strip alphabetical characters to extract pure number
   const { count, ref } = useCountUp(numericValue);
   return (
     <div ref={ref} className="text-center px-3 sm:px-6 py-4 sm:py-5">
+      {/* Dynamic numeric representation output */}
       <p className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-white mb-1 sm:mb-2">
         {count.toLocaleString()}{suffix}
       </p>
+      {/* Stat item category label */}
       <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] sm:tracking-[0.25em] text-white/50 leading-tight">{label}</p>
     </div>
   );
 }
 
 export default function HomePage() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [newsList, setNewsList] = useState([]);
-  const [eventsList, setEventsList] = useState([]);
-  const [departmentsList, setDepartmentsList] = useState([]);
+  const [isScrolled, setIsScrolled] = useState(false); // Controls navbar background styling transition on scroll
+  const [newsList, setNewsList] = useState([]); // List of fetched actualities articles
+  const [eventsList, setEventsList] = useState([]); // List of fetched upcoming events
+  const [departmentsList, setDepartmentsList] = useState([]); // List of departments configured in portal
 
+  // Monitor window scroll events to dynamically update header style classes
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Fetch homepage data in parallel on initial mount
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -105,6 +115,7 @@ export default function HomePage() {
     fetchData();
   }, []);
 
+  // Array representing static statistics displayed on the counters banner
   const stats = [
     { label: 'Étudiants Inscrits', value: '2800' },
     { label: 'Enseignants Experts', value: '145' },
@@ -112,6 +123,7 @@ export default function HomePage() {
     { label: 'Clubs Étudiants', value: '12' },
   ];
 
+  // Fallback list of departments with design codes and icons if backend fetch returns empty
   const defaultDepartments = [
     { name: 'Technologies de l\'Informatique', code: 'TI', icon: Monitor },
     { name: 'Génie Électrique', code: 'GE', icon: Zap },
@@ -121,6 +133,7 @@ export default function HomePage() {
     { name: 'Sciences Éco. et Gestion', code: 'SEG', icon: BarChart3 },
   ];
 
+  // Helper function mapping department names to their corresponding Lucide icons
   const getDeptIcon = (name) => {
     if (!name) return Monitor;
     const n = name.toLowerCase();
@@ -133,6 +146,7 @@ export default function HomePage() {
     return Monitor;
   };
 
+  // Determine active departments list, generating abbreviations as codes and assigning matched icons
   const displayDepartments = departmentsList.length > 0
     ? departmentsList.map((d, i) => ({
         ...d,
@@ -141,6 +155,7 @@ export default function HomePage() {
       }))
     : defaultDepartments;
 
+  // Configuration of shortcut tiles for key pages
   const quickServices = [
     { title: 'Inscription en ligne', icon: ArrowUpRight, desc: 'Portail de pré-inscription académique', href: '/services' },
     { title: 'Centre 4C', icon: Sparkles, desc: 'Carrière et Certifications professionnelles', href: '/services' },
@@ -150,6 +165,7 @@ export default function HomePage() {
     { title: 'Concours & Mastères', icon: GraduationCap, desc: 'Formations Post-Licence', href: '/departments' },
   ];
 
+  // Navigation menu configurations with sub-links used in the navbar
   const menuItems = [
     { title: 'Institut', items: [
       { title: 'Présentation', desc: 'Histoire et mission', icon: Info, href: '/about' },

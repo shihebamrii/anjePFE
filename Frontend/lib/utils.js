@@ -1,10 +1,23 @@
+// Import clsx library to selectively join classNames conditional strings together
 import { clsx } from "clsx";
+// Import twMerge to merge Tailwind utility classes safely without specificity conflicts
 import { twMerge } from "tailwind-merge"
 
+/**
+ * Merges multiple Tailwind CSS classes dynamically, handling conflicts (e.g. text-red-500 override)
+ * @param {...string} inputs - CSS classes to merge
+ * @returns {string} - Combined unique CSS classes
+ */
 export function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Generates two-letter initials from first and last names (e.g. "John Doe" -> "JD")
+ * @param {string} firstName - User's first name
+ * @param {string} lastName - User's last name
+ * @returns {string} - Formatted initials in uppercase
+ */
 export function getInitials(firstName, lastName) {
   if (!firstName && !lastName) return '??';
   const f = firstName ? firstName.charAt(0) : '';
@@ -13,9 +26,9 @@ export function getInitials(firstName, lastName) {
 }
 
 /**
- * Calculates the weighted average of grades
+ * Calculates the weighted average of academic grades
  * @param {Array} grades - Array of grade objects {score: number, coefficient: number}
- * @returns {string} - Average formatted to 2 decimal places
+ * @returns {string} - Average score formatted to 2 decimal places (out of 20)
  */
 export function calculateAverage(grades) {
   if (!grades || grades.length === 0) return "0.00";
@@ -23,6 +36,7 @@ export function calculateAverage(grades) {
   let totalPoints = 0;
   let totalCoeff = 0;
   
+  // Sum up score multiplied by coefficient and build coefficient total divisor
   grades.forEach(g => {
     const score = Number(g.score) || 0;
     const coeff = Number(g.coefficient) || 1;
@@ -31,24 +45,26 @@ export function calculateAverage(grades) {
   });
   
   if (totalCoeff === 0) return "0.00";
+  // Return the rounded final quotient
   return (totalPoints / totalCoeff).toFixed(2);
 }
 
 /**
- * Calculates attendance rate percentage
- * @param {Array} attendance - Array of attendance objects {status: 'PRESENT' | 'ABSENT' | 'LATE'}
- * @returns {number} - Attendance rate 0-100
+ * Calculates attendance rate percentage from a history log
+ * @param {Array} attendance - Array of attendance records {status: 'PRESENT' | 'ABSENT' | 'LATE'}
+ * @returns {number} - Attendance rate as a percentage integer (0-100)
  */
 export function getAttendanceRate(attendance) {
   if (!attendance || attendance.length === 0) return 0;
+  // Absences do not count, present and late are count as attending the class session
   const present = attendance.filter(a => a.status === 'PRESENT' || a.status === 'LATE').length;
   return Math.round((present / attendance.length) * 100);
 }
 
 /**
- * Formats date string to French format
+ * Formats a Date object or standard date string into French local format (e.g. 11 juin 2026)
  * @param {string|Date} date - Date to format
- * @returns {string} - Formatted date
+ * @returns {string} - Formatted date string or hyphen placeholder
  */
 export function formatDate(date) {
   if (!date) return '-';
@@ -60,21 +76,21 @@ export function formatDate(date) {
 }
 
 /**
- * Returns Tailwind classes for grade color based on score
- * @param {number} score - Grade score
- * @returns {string} - CSS classes
+ * Determines and returns Tailwind background/text color classes based on student grade score
+ * @param {number} score - Student exam score (out of 20)
+ * @returns {string} - Combined class names for color badge
  */
 export function getGradeColor(score) {
-  if (score >= 16) return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400';
-  if (score >= 12) return 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400';
-  if (score >= 10) return 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400';
-  return 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400';
+  if (score >= 16) return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400'; // Very Good
+  if (score >= 12) return 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400';       // Good
+  if (score >= 10) return 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400';     // Passing
+  return 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400';                            // Failing
 }
 
 /**
- * Returns label and CSS class for user roles
- * @param {string} role - User role
- * @returns {object} - {label, class}
+ * Maps a database user role string to translated display label and style badge classes
+ * @param {string} role - User role (e.g. ADMIN, TEACHER, STUDENT)
+ * @returns {object} - Object containing {label: string, class: string}
  */
 export function getRoleBadge(role) {
   switch (role) {
@@ -87,9 +103,9 @@ export function getRoleBadge(role) {
 }
 
 /**
- * Returns label and CSS class for stage types
- * @param {string} type - Stage type
- * @returns {object} - {label, class}
+ * Maps internship (stage) type string to translated display label and style badge classes
+ * @param {string} type - Internship type (e.g. PFE, OUVRIER)
+ * @returns {object} - Object containing {label: string, class: string}
  */
 export function getStageTypeBadge(type) {
   switch (type) {
@@ -102,9 +118,9 @@ export function getStageTypeBadge(type) {
 }
 
 /**
- * Returns label and CSS class for stage status
- * @param {string} status - Stage status
- * @returns {object} - {label, class}
+ * Maps internship (stage) status string to translated display label and style badge classes
+ * @param {string} status - Internship status (e.g. OPEN, CLOSED, PENDING)
+ * @returns {object} - Object containing {label: string, class: string}
  */
 export function getStageStatusBadge(status) {
   switch (status) {

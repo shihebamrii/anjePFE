@@ -1,17 +1,25 @@
+// Import Link component for client-side navigation
 import Link from 'next/link';
+// Import icons from lucide-react representing stages, validation check, buildings, and arrows
 import { ArrowLeft, Briefcase, ChevronRight, FileCheck, Building } from 'lucide-react';
 
+// Page component displaying internship and final project (PFE) details
 export default function StagesPage() {
   return (
+    // Main background wrapper with page margins
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-20">
+      {/* Header section with deep blue branding and gold accents */}
       <header className="bg-brand text-white pt-24 pb-16 px-4 sm:px-6 relative overflow-hidden">
         <div className="max-w-7xl mx-auto relative z-10">
+          {/* Back link to root homepage */}
           <Link href="/" className="inline-flex items-center gap-2 text-white/50 hover:text-white transition-colors text-sm font-semibold mb-8 group">
             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Retour à l'accueil
           </Link>
+          {/* Decorative gold background briefcase icon */}
           <div className="w-16 h-16 rounded-2xl bg-gold/20 flex items-center justify-center text-gold mb-6">
             <Briefcase size={32} />
           </div>
+          {/* Title and header info */}
           <h1 className="font-serif text-4xl sm:text-5xl font-bold mb-6">
             Espace Stages & <em className="text-gold" style={{ fontStyle: 'italic' }}>PFE</em>
           </h1>
@@ -21,21 +29,30 @@ export default function StagesPage() {
         </div>
       </header>
 
+      {/* Main content grid splitting latest offers and administrative portal actions */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 mt-12 grid md:grid-cols-3 gap-8">
+        
+        {/* Left Column: List of internship offers */}
         <div className="md:col-span-2 space-y-6">
           <h2 className="font-serif text-2xl text-brand mb-6">Dernières Offres de Stage</h2>
           
+          {/* Iterative placeholder layout list for stages */}
           {[1,2,3,4].map((i) => (
+            // Offer card container
             <div key={i} className="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col sm:flex-row gap-6 hover:shadow-md transition-shadow cursor-pointer">
+              {/* Partner company icon representation */}
               <div className="w-16 h-16 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
                 <Building size={24} className="text-slate-400" />
               </div>
+              {/* Offer details */}
               <div className="flex-1">
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="font-bold text-lg text-brand">Développeur Full-Stack (Stage PFE)</h3>
+                  {/* Visual tag badge */}
                   <span className="text-[10px] bg-blue-50 text-blue-600 px-3 py-1 rounded-full uppercase font-bold tracking-widest">Nouveau</span>
                 </div>
                 <p className="text-sm text-slate-500 mb-4">Entreprise Partenaire • Gafsa, Tunisie</p>
+                {/* Tech tags and duration specifications */}
                 <div className="flex items-center gap-3 text-[11px] text-slate-400 font-medium">
                   <span className="bg-slate-50 px-2 py-1 rounded">React</span>
                   <span className="bg-slate-50 px-2 py-1 rounded">Node.js</span>
@@ -45,33 +62,43 @@ export default function StagesPage() {
             </div>
           ))}
           
+          {/* CTA redirecting to all offers */}
           <button className="w-full py-4 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 uppercase tracking-widest transition-colors">
             Voir toutes les offres (12)
           </button>
         </div>
 
+        {/* Right Column: Portal procedures links and corporate CTA banner */}
         <div className="space-y-6">
+          {/* Procedure documentation downloads card */}
           <div className="bg-white rounded-3xl p-8 border border-slate-200/60 shadow-sm">
+            {/* Folder check icon */}
             <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-6">
               <FileCheck size={24} />
             </div>
             <h3 className="font-bold text-xl text-brand mb-4">Portail Démarches</h3>
+            {/* List of links */}
             <ul className="space-y-3 mb-8">
               <li className="flex items-center gap-2 text-sm text-slate-600"><ChevronRight size={14} className="text-gold" /> Convention de stage</li>
               <li className="flex items-center gap-2 text-sm text-slate-600"><ChevronRight size={14} className="text-gold" /> Fiche d'évaluation</li>
               <li className="flex items-center gap-2 text-sm text-slate-600"><ChevronRight size={14} className="text-gold" /> Dépôt de rapport PFE</li>
             </ul>
+            {/* Login button redirection to Extranet */}
             <Link href="/login" className="block w-full py-3 bg-brand text-white text-center rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-brand-light transition-colors">
               Connexion Extranet
             </Link>
           </div>
 
+          {/* Gold banner call-out for corporate recruiters to post new positions */}
           <div className="bg-gold rounded-3xl p-8 text-brand relative overflow-hidden">
+            {/* Faded background icon decoration */}
             <div className="absolute -right-4 -bottom-4 opacity-10">
               <Briefcase size={120} />
             </div>
+            {/* Call to action text elements */}
             <h3 className="font-bold text-xl mb-3 relative z-10">Vous êtes une entreprise ?</h3>
             <p className="text-sm font-medium opacity-80 mb-6 relative z-10">Proposez vos offres de stages ou PFE à nos étudiants.</p>
+            {/* CTA action button */}
             <button className="w-full py-3 bg-white text-brand rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-slate-50 transition-colors shadow-sm relative z-10">
               Déposer une offre
             </button>

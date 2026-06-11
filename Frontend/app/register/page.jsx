@@ -1,12 +1,17 @@
 'use client';
 
+// Import React state hooks
 import { useState } from 'react';
+// Import client-side router hooks from Next.js
 import { useRouter } from 'next/navigation';
+// Import custom authentication context hook
 import { useAuth } from '@/context/AuthContext';
+// Import styled Shadcn UI components
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import Image from 'next/image';
+// Import Lucide icons for UI and input decorators
 import {
   User, Mail, Lock, Loader2, ArrowRight, ArrowLeft,
   GraduationCap, BookOpen, Building2, Eye, EyeOff,
@@ -15,38 +20,59 @@ import {
 
 export default function RegisterPage() {
   const router = useRouter();
+  // Extract registration helper from AuthContext
   const { register } = useAuth();
+  
+  // Local Form state holding signup details
   const [formData, setFormData] = useState({
     firstName: '', lastName: '', email: '', password: '', confirmPassword: '', role: 'STUDENT'
   });
+  // Error message alert state
   const [error, setError] = useState('');
+  // Loading status spinner state
   const [loading, setLoading] = useState(false);
+  // Toggle visibility of password text characters
   const [showPassword, setShowPassword] = useState(false);
 
-  // Validation based on backend models/User.js schema
+  // Form Validation checks matching backend validators:
+  // 1. Email format check
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
+  // 2. Minimum length check (6 characters)
   const isPasswordValid = formData.password.length >= 6;
+  // 3. Match check between password and confirmation input
   const isConfirmPasswordValid = formData.password === formData.confirmPassword;
+  // 4. Verification that name fields are not empty spaces
   const isNameValid = formData.firstName.trim().length > 0 && formData.lastName.trim().length > 0;
+  
+  // Combine all validation checks to toggle button status
   const isFormValid = isEmailValid && isPasswordValid && isConfirmPasswordValid && isNameValid;
 
+  // Handle form submission to create account
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Safety check for form validity
     if (!isFormValid) {
       setError('Veuillez remplir correctement tous les champs.');
       return;
     }
     setLoading(true);
     setError('');
+    
     try {
+      // Exclude 'confirmPassword' key from object payload before sending to backend database
       const { confirmPassword, ...data } = formData;
       await register(data);
+      // Route user to login screen upon successful registration
       router.push('/login');
     } catch (err) {
+      // Catch duplicate emails or connection errors
       setError(err.response?.data?.message || 'Erreur lors de l\'inscription.');
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // Role selections display mapping configurations
   const roles = [
     { value: 'STUDENT', label: 'Étudiant', icon: GraduationCap, desc: 'Accès notes & présences', color: 'text-blue-500', bg: 'bg-blue-50' },
     { value: 'TEACHER', label: 'Enseignant', icon: BookOpen, desc: 'Gérer vos classes', color: 'text-amber-600', bg: 'bg-amber-50' },
@@ -83,7 +109,7 @@ export default function RegisterPage() {
         <div className="absolute bottom-32 left-16 w-80 h-80 rounded-full bg-blue-500/8 blur-[120px]" />
 
         <div className="relative z-10 flex flex-col justify-between px-14 xl:px-20 py-12 w-full">
-          {/* Top — Logo */}
+          {/* Top — Logo and Brand titles */}
           <Link href="/" className="flex items-center gap-3 group w-fit">
             <div className="w-11 h-11 rounded-xl overflow-hidden shadow-lg shadow-black/20 group-hover:scale-105 transition-transform">
               <Image src="/logo.jpeg" alt="ISET" width={44} height={44} className="w-full h-full object-cover" />
@@ -94,7 +120,7 @@ export default function RegisterPage() {
             </div>
           </Link>
 
-          {/* Center — Content */}
+          {/* Center — Hero content details */}
           <div className="max-w-md">
             <div className="flex items-center gap-3 mb-5">
               <div className="w-8 h-[2px] bg-gold" />
@@ -110,7 +136,7 @@ export default function RegisterPage() {
               Rejoignez la communauté universitaire de l'ISET Gafsa et accédez à l'ensemble des services numériques de l'institut.
             </p>
 
-            {/* Benefits list */}
+            {/* Benefits lists */}
             <div className="space-y-4">
               {[
                 'Consultation des notes et résultats en temps réel',
@@ -128,7 +154,7 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          {/* Bottom — Back to login */}
+          {/* Bottom — Back to login trigger */}
           <div className="flex items-center gap-3">
             <Link href="/login" className="flex items-center gap-2 text-white/30 hover:text-white/60 text-[11px] font-bold uppercase tracking-widest transition-colors group">
               <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
@@ -138,16 +164,16 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      {/* ===== RIGHT PANEL — Registration Form ===== */}
+      {/* ===== RIGHT PANEL — Registration Form panel ===== */}
       <div className="flex-1 bg-white relative overflow-y-auto">
         <div className="flex flex-col justify-center min-h-full p-6 sm:p-10">
-          {/* Subtle decorative elements */}
+          {/* Background glowing gradients */}
           <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-blue-50/50 rounded-full blur-[100px] pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-gold/5 rounded-full blur-[80px] pointer-events-none" />
 
           <div className="w-full max-w-md xl:max-w-lg mx-auto relative z-10">
 
-          {/* Mobile logo */}
+          {/* Mobile logo (hidden on desktop views) */}
           <div className="lg:hidden text-center mb-8">
             <Link href="/" className="inline-flex flex-col items-center gap-3">
               <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg">
@@ -160,10 +186,10 @@ export default function RegisterPage() {
             </Link>
           </div>
 
-          {/* Form Container */}
+          {/* Form wrapper */}
           <div className="w-full mt-4 sm:mt-6">
 
-            {/* Header */}
+            {/* Header titles */}
             <div className="flex flex-col space-y-2 text-center mb-8">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                 <User className="h-6 w-6 text-primary" />
@@ -172,8 +198,9 @@ export default function RegisterPage() {
               <p className="text-sm text-slate-500">Rejoignez la communauté ISET Gafsa</p>
             </div>
 
-            {/* Form */}
+            {/* Form tag */}
             <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Display submit error messages */}
               {error && (
                 <div className="bg-red-50 text-red-600 border border-red-200/80 p-3.5 rounded-xl text-sm text-center font-semibold animate-scale-in flex items-center justify-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
@@ -181,7 +208,7 @@ export default function RegisterPage() {
                 </div>
               )}
 
-              {/* Name fields */}
+              {/* First & Last Name Inputs */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium leading-none text-slate-700">Prénom</label>
@@ -211,7 +238,7 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Email */}
+              {/* Email Input */}
               <div className="space-y-2">
                 <label className="text-sm font-medium leading-none text-slate-700">Email</label>
                 <div className="relative">
@@ -227,7 +254,7 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Password fields */}
+              {/* Password & Confirmation Password Inputs */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium leading-none text-slate-700">Mot de passe</label>
@@ -241,6 +268,7 @@ export default function RegisterPage() {
                       placeholder="••••••"
                       required
                     />
+                    {/* Toggle password visibility */}
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
@@ -267,7 +295,7 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Role selection — Premium cards */}
+              {/* Role selection radio buttons (STUDENT, TEACHER, PARTNER) */}
               <div className="space-y-3">
                 <label className="text-sm font-medium leading-none text-slate-700">Votre rôle</label>
                 <div className="grid grid-cols-3 gap-3">
@@ -291,7 +319,7 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Submit */}
+              {/* Submit Form button */}
               <Button
                 type="submit"
                 disabled={loading || !isFormValid}
@@ -302,7 +330,7 @@ export default function RegisterPage() {
               </Button>
             </form>
 
-            {/* Divider */}
+            {/* Divider block */}
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t" />
@@ -312,6 +340,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
+            {/* Link to login page */}
             <div className="text-center text-sm">
               Déjà un compte ?{' '}
               <Link
@@ -323,7 +352,7 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          {/* Footer */}
+          {/* Footer copyright */}
           <div className="mt-8 text-center pb-8">
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300">
               © {new Date().getFullYear()} ISET Gafsa — Direction des Études et des Stages

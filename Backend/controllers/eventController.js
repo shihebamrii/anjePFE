@@ -1,16 +1,18 @@
-import Event from '../models/Event.js';
+import Event from '../models/Event.js'; // Import Event database model
 
 // @desc    Get all events
 // @route   GET /api/events
 // @access  Public
 export const getEvents = async (req, res) => {
   try {
-    const { type, audience } = req.query;
+    const { type, audience } = req.query; // Extract search criteria from query params
     let query = {};
 
+    // Filter by type or target audience if specified
     if (type) query.type = type;
     if (audience) query.audience = { $in: [audience, 'all'] };
 
+    // Query DB, populate organizer information, and sort chronologically by start date
     const events = await Event.find(query)
       .populate('organizer', 'firstName lastName')
       .sort({ startDate: 1 });
@@ -26,6 +28,7 @@ export const getEvents = async (req, res) => {
 // @access  Public
 export const getEventById = async (req, res) => {
   try {
+    // Locate specific event using ID parameter and populate creator name
     const event = await Event.findById(req.params.id)
       .populate('organizer', 'firstName lastName');
 
@@ -52,6 +55,7 @@ export const createEvent = async (req, res) => {
       try { parsedAudience = JSON.parse(audience); } catch (e) { parsedAudience = [audience]; }
     }
 
+    // Initialize new Event document, mapping file upload paths if present in the files collection
     const event = new Event({
       title,
       description,
@@ -60,7 +64,7 @@ export const createEvent = async (req, res) => {
       type,
       location,
       audience: parsedAudience,
-      organizer: req.user._id,
+      organizer: req.user._id, // Assign organizer ID from session user context
       image: req.files && req.files.image ? `/uploads/${req.files.image[0].filename}` : '',
       document: req.files && req.files.document ? `/uploads/${req.files.document[0].filename}` : '',
     });
@@ -77,11 +81,13 @@ export const createEvent = async (req, res) => {
 // @access  Private/ChefDept
 export const updateEvent = async (req, res) => {
   try {
+    // Locate event to update
     const event = await Event.findById(req.params.id);
 
     if (event) {
       const { title, description, startDate, endDate, type, location, audience } = req.body;
 
+      // Conditionally edit properties
       event.title = title || event.title;
       event.description = description || event.description;
       event.startDate = startDate || event.startDate;
@@ -89,14 +95,17 @@ export const updateEvent = async (req, res) => {
       event.type = type || event.type;
       event.location = location || event.location;
       if (audience) {
+        // Parse audience list strings if parsed as serialized text
         event.audience = Array.isArray(audience) ? audience : JSON.parse(audience);
       }
 
+      // Update uploaded media files if replacement is attached
       if (req.files) {
         if (req.files.image) event.image = `/uploads/${req.files.image[0].filename}`;
         if (req.files.document) event.document = `/uploads/${req.files.document[0].filename}`;
       }
 
+      // Commit changes to database
       const updatedEvent = await event.save();
       res.json(updatedEvent);
     } else {
@@ -112,9 +121,11 @@ export const updateEvent = async (req, res) => {
 // @access  Private/ChefDept
 export const deleteEvent = async (req, res) => {
   try {
+    // Locate target event by ID
     const event = await Event.findById(req.params.id);
 
     if (event) {
+      // Execute deletion
       await Event.deleteOne({ _id: event._id });
       res.json({ message: 'Event removed' });
     } else {

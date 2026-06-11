@@ -1,68 +1,92 @@
-'use client';
+'use client'; // Instructs Next.js to compile and render this file on the client-side (in the browser)
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { LoadingPage } from '@/components/ui/loading';
-import { authService } from '@/services/authService';
-import { gradeService } from '@/services/gradeService';
-import { attendanceService } from '@/services/attendanceService';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { getInitials, getRoleBadge, calculateAverage, getAttendanceRate, formatDate } from '@/lib/utils';
-import { User, Mail, Building2, GraduationCap, ClipboardCheck, Calendar, IdCard } from 'lucide-react';
+import { useState, useEffect } from 'react'; // React state hooks for lifecycle methods and reactive parameters
+import { useAuth } from '@/context/AuthContext'; // Custom hook to access authentication context state variables
+import { Card, CardContent } from '@/components/ui/card'; // Custom UI components for card layout containers
+import { Badge } from '@/components/ui/badge'; // Custom UI badge labels component
+import { LoadingPage } from '@/components/ui/loading'; // Custom loading page transition component
+import { authService } from '@/services/authService'; // Helper functions to fetch user profile database details
+import { gradeService } from '@/services/gradeService'; // Helper functions to retrieve student grades
+import { attendanceService } from '@/services/attendanceService'; // Helper functions to retrieve student attendance reports
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'; // Custom avatar profile image layout components
+import { getInitials, getRoleBadge, calculateAverage, getAttendanceRate, formatDate } from '@/lib/utils'; // Profile helpers to format names, role badges, averages, attendance, and dates
+import { User, Mail, Building2, GraduationCap, ClipboardCheck, Calendar, IdCard } from 'lucide-react'; // Vector icons assets
 
 export default function ProfilePage() {
-  const { user, isStudent } = useAuth();
-  const [profile, setProfile] = useState(null);
-  const [grades, setGrades] = useState([]);
-  const [attendance, setAttendance] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // --- Auth Checks ---
+  const { user, isStudent } = useAuth(); // Extract user object and student checker flag from context
 
+  // --- React State Declarations ---
+  const [profile, setProfile] = useState(null); // Detailed user profile dataset retrieved from API
+  const [grades, setGrades] = useState([]); // List of grades (populated only if user role is student)
+  const [attendance, setAttendance] = useState([]); // List of attendance records (populated only if student)
+  const [loading, setLoading] = useState(true); // Full screen loading transition state flag
+
+  // Fetch detailed user profile information and student metrics once on mount
   useEffect(() => {
     async function fetchData() {
       try {
-        const p = await authService.getProfile().catch(() => null);
+        const p = await authService.getProfile().catch(() => null); // Fetch detailed database record
         setProfile(p);
+        
+        // If logged-in user is a student, fetch their grades and attendance statistics
         if (isStudent) {
           const [g, a] = await Promise.all([
             gradeService.getGrades().catch(() => []),
             attendanceService.getAttendance().catch(() => []),
           ]);
-          setGrades(g); setAttendance(a);
+          setGrades(g); 
+          setAttendance(a);
         }
-      } catch (err) { console.error(err); }
-      finally { setLoading(false); }
+      } catch (err) { 
+        console.error(err); 
+      } finally { 
+        setLoading(false); // Terminate spinner screen loading state
+      }
     }
     fetchData();
-  }, [isStudent]);
+  }, [isStudent]); // Trigger effect fetch logic if student status shifts
 
+  // Show loading indicator page if query fetches are pending
   if (loading) return <LoadingPage message="Chargement du profil..." />;
 
+  // Select either backend profile details object or auth user fallback object
   const displayUser = profile || user;
+  
+  // Retrieve custom CSS styles classes and readable role label tag
   const roleBadge = getRoleBadge(displayUser?.role);
+  
+  // Calculate average scores and attendance rates dynamically
   const avg = isStudent ? calculateAverage(grades) : null;
   const attendRate = isStudent ? getAttendanceRate(attendance) : null;
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
+      {/* Title section with icon header */}
       <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2 tracking-tight">
         <User size={24} className="text-accent" /> Mon Profil
       </h1>
 
+      {/* Main Profile Info Card element */}
       <Card className="overflow-hidden border-0">
+        {/* Banner background layout placeholder */}
         <div className="h-32 gradient-hero-mesh relative">
           <div className="absolute bottom-0 left-6 translate-y-1/2">
+            {/* Avatar circular initials wrapper */}
             <Avatar className="h-20 w-20 border-4 border-white dark:border-slate-900 shadow-lg ring-0">
               <AvatarFallback className="text-2xl">{getInitials(displayUser?.firstName, displayUser?.lastName)}</AvatarFallback>
             </Avatar>
           </div>
         </div>
+        
+        {/* Name and profile descriptors section */}
         <CardContent className="pt-14 pb-6 px-6">
           <div>
             <h2 className="text-xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">{displayUser?.firstName} {displayUser?.lastName}</h2>
             <Badge className={roleBadge.class + " mt-1"}>{roleBadge.label}</Badge>
           </div>
+          
+          {/* Metadata detail block grids */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6">
             {[
               { icon: Mail, label: 'Email', value: displayUser?.email },
@@ -82,6 +106,7 @@ export default function ProfilePage() {
         </CardContent>
       </Card>
 
+      {/* Renders dynamic progress cards block only if user role is a student */}
       {isStudent && (
         <div className="grid grid-cols-2 gap-4">
           {[
@@ -103,3 +128,4 @@ export default function ProfilePage() {
     </div>
   );
 }
+

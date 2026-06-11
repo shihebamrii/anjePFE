@@ -1,28 +1,31 @@
-'use client';
+'use client'; // Interactive client components execution path
 
-import { useState, useEffect, useMemo } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { LoadingPage, LoadingSpinner } from '@/components/ui/loading';
-import { attendanceService } from '@/services/attendanceService';
-import { academicService } from '@/services/academicService';
-import { getStatusColor, formatDate, getAttendanceRate } from '@/lib/utils';
+import { useState, useEffect, useMemo } from 'react'; // React state hooks and optimized selectors
+import { useAuth } from '@/context/AuthContext'; // Context hook representing active credentials and roles
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; // Styled card blocks
+import { Badge } from '@/components/ui/badge'; // UI label markers
+import { Button } from '@/components/ui/button'; // Reusable action buttons
+import { Input } from '@/components/ui/input'; // Input field text controls
+import { LoadingPage, LoadingSpinner } from '@/components/ui/loading'; // Page spinner dialog layouts
+import { attendanceService } from '@/services/attendanceService'; // API services module interfacing database attendance actions
+import { academicService } from '@/services/academicService'; // API services module interfacing teacher course assignments
+import { getStatusColor, formatDate, getAttendanceRate } from '@/lib/utils'; // Visual helpers and string formats
+// Lucide icons representing actions and entities
 import {
   ClipboardCheck, Trash2, Check, X, Clock, UserCheck,
   Users, BookOpen, CalendarDays, ChevronRight, Search, AlertCircle, HelpCircle, Printer
 } from 'lucide-react';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import jsPDF from 'jspdf'; // Library to dynamically build printable documents
+import autoTable from 'jspdf-autotable'; // Add-on printing tabular grids to PDF
 
+// Status configuration map mapping keys to translations and class names styling
 const STATUS_CONFIG = {
   PRESENT: { label: 'Présent', icon: Check, color: 'bg-emerald-500 text-white', ring: 'ring-emerald-200', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
   ABSENT:  { label: 'Absent',  icon: X,     color: 'bg-red-500 text-white',    ring: 'ring-red-200',    badge: 'bg-red-50 text-red-700 border-red-200' },
   LATE:    { label: 'Retard',  icon: Clock, color: 'bg-amber-500 text-white',   ring: 'ring-amber-200',   badge: 'bg-amber-50 text-amber-700 border-amber-200' },
 };
 
+// Available session formats list
 const SESSION_TYPES = [
   { value: 'COURS', label: 'Cours' },
   { value: 'TD', label: 'TD' },
@@ -31,19 +34,19 @@ const SESSION_TYPES = [
 ];
 
 export default function AttendancePage() {
-  const { user, isStudent, isTeacher, isAdmin } = useAuth();
+  const { user, isStudent, isTeacher, isAdmin } = useAuth(); // Destructure active role permissions and info
 
-  // History records for all views
+  // History records list state
   const [records, setRecords] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Tracking initial query status
   
-  // History filters
+  // History query filter values
   const [historySearch, setHistorySearch] = useState('');
   const [historyClass, setHistoryClass] = useState('');
   const [historyCourse, setHistoryCourse] = useState('');
   const [historyDate, setHistoryDate] = useState('');
 
-  // Extract unique classes and courses from the history records for the filter dropdowns
+  // Extract unique classes and courses list from records to build history filters dropdown options
   const historyFilterOptions = useMemo(() => {
     if (!records.length) return { classes: [], courses: [] };
     const classes = new Set();
@@ -58,23 +61,23 @@ export default function AttendancePage() {
     };
   }, [records]);
 
-  // Teacher-only marking state
-  const [teacherCourses, setTeacherCourses] = useState([]);
-  const [selectedClass, setSelectedClass] = useState('');
-  const [selectedCourse, setSelectedCourse] = useState('');
-  const [sessionDate, setSessionDate] = useState(new Date().toISOString().split('T')[0]);
-  const [sessionType, setSessionType] = useState('COURS');
-  const [durationHours, setDurationHours] = useState('1.5');
+  // States only used by instructors to mark new attendance
+  const [teacherCourses, setTeacherCourses] = useState([]); // Courses taught by active instructor
+  const [selectedClass, setSelectedClass] = useState(''); // Target selected classroom name
+  const [selectedCourse, setSelectedCourse] = useState(''); // Target selected lesson course name
+  const [sessionDate, setSessionDate] = useState(new Date().toISOString().split('T')[0]); // Date of current lesson sheet
+  const [sessionType, setSessionType] = useState('COURS'); // Session format select state
+  const [durationHours, setDurationHours] = useState('1.5'); // Lesson duration select state
 
-  // Student list for marking
-  const [classStudents, setClassStudents] = useState([]);
-  const [studentStatuses, setStudentStatuses] = useState({});
-  const [loadingStudents, setLoadingStudents] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [successMsg, setSuccessMsg] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
+  // Student grid lists mapping
+  const [classStudents, setClassStudents] = useState([]); // Students list associated with target selected classroom
+  const [studentStatuses, setStudentStatuses] = useState({}); // Dynamic object indexing student ID to status ('PRESENT', etc.)
+  const [loadingStudents, setLoadingStudents] = useState(false); // Spinner toggle for students list load
+  const [saving, setSaving] = useState(false); // API commit trigger spinner state
+  const [successMsg, setSuccessMsg] = useState(''); // Status success alert string
+  const [errorMsg, setErrorMsg] = useState(''); // Status error alert string
 
-  // Load history + teacher courses on mount
+  // Fetch history records and teacher assignments on initial component mount
   useEffect(() => {
     async function init() {
       try {
@@ -84,19 +87,22 @@ export default function AttendancePage() {
         ]);
         setRecords(attendanceData);
         setTeacherCourses(coursesData);
-      } catch (err) { console.error(err); }
-      finally { setLoading(false); }
+      } catch (err) { 
+        console.error(err); 
+      } finally { 
+        setLoading(false); 
+      }
     }
     init();
   }, [isTeacher, isAdmin]);
 
-  // Derive unique class names from teacher's courses
+  // Derive unique classes from courses taught by active instructor
   const classNames = useMemo(() => {
     const names = new Set(teacherCourses.map(c => c.className));
     return Array.from(names).sort();
   }, [teacherCourses]);
 
-  // Courses available for the selected class
+  // Filter lessons available based on the current selected class
   const coursesForClass = useMemo(() => {
     if (!selectedClass) return [];
     const courseNames = new Set();
@@ -109,7 +115,7 @@ export default function AttendancePage() {
       });
   }, [teacherCourses, selectedClass]);
 
-  // When class changes, fetch students
+  // Trigger loading students list whenever classroom selection changes
   useEffect(() => {
     if (!selectedClass) {
       setClassStudents([]);
@@ -121,17 +127,21 @@ export default function AttendancePage() {
       try {
         const students = await attendanceService.getStudentsByClass(selectedClass);
         setClassStudents(students);
-        // Default all to null (unselected) instead of PRESENT
+        // Default all status indexes to unmarked state (null)
         const statuses = {};
         students.forEach(s => { statuses[s._id] = null; });
         setStudentStatuses(statuses);
-      } catch (err) { console.error(err); setClassStudents([]); }
-      finally { setLoadingStudents(false); }
+      } catch (err) { 
+        console.error(err); 
+        setClassStudents([]); 
+      } finally { 
+        setLoadingStudents(false); 
+      }
     }
     fetchStudents();
   }, [selectedClass]);
 
-  // Auto-select first course when class changes
+  // Automatically pre-select first valid lesson course item when class changes
   useEffect(() => {
     if (coursesForClass.length > 0) {
       setSelectedCourse(coursesForClass[0].courseName);

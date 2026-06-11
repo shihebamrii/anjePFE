@@ -1,21 +1,24 @@
-'use client';
+'use client'; // Instructs Next.js to render this component on the client side (in the browser)
 
-import { useState, useEffect, useMemo } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { LoadingSpinner } from '@/components/ui/loading';
-import { academicService } from '@/services/academicService';
-import { departmentService } from '@/services/departmentService';
-import { userService } from '@/services/userService';
-import { CalendarDays, MapPin, User as UserIcon, BookOpen, ChevronDown, Plus, GripVertical, Trash2 } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react'; // React hooks for state, side-effects, and memoized values
+import { Card, CardContent } from '@/components/ui/card'; // custom UI layout components for cards
+import { Badge } from '@/components/ui/badge'; // custom UI badge pill label component
+import { LoadingSpinner } from '@/components/ui/loading'; // custom loading spinner component
+import { academicService } from '@/services/academicService'; // API services for academic resources and schedules
+import { departmentService } from '@/services/departmentService'; // API services for department configuration
+import { userService } from '@/services/userService'; // API services to search for users (teachers)
+import { CalendarDays, MapPin, User as UserIcon, BookOpen, ChevronDown, Plus, GripVertical, Trash2 } from 'lucide-react'; // Visual icon elements
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/ui/dropdown-menu'; // UI components to build filter select menus
 
+// Days of the week header array for schedule layout columns
 const DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+
+// Time slot intervals configurations mapping to grid rows
 const TIME_SLOTS = [
   { id: 1, label: '08:30 - 10:00' },
   { id: 2, label: '10:10 - 11:40' },
@@ -26,27 +29,30 @@ const TIME_SLOTS = [
 ];
 
 export default function SchedulePage() {
-  const [classes, setClasses] = useState([]);
-  const [selectedClass, setSelectedClass] = useState(null);
+  // --- React State Declarations ---
+  const [classes, setClasses] = useState([]); // List of classes available for selection
+  const [selectedClass, setSelectedClass] = useState(null); // The currently active/viewed class schedule object
   
-  const [courses, setCourses] = useState([]);
-  const [teachers, setTeachers] = useState([]);
-  const [rooms, setRooms] = useState([]);
+  const [courses, setCourses] = useState([]); // List of available subjects/courses in department
+  const [teachers, setTeachers] = useState([]); // List of instructors available to teach
+  const [rooms, setRooms] = useState([]); // List of classrooms available for bookings
 
-  const [sessions, setSessions] = useState([]);
-  const [loadingClasses, setLoadingClasses] = useState(true);
-  const [loadingSchedule, setLoadingSchedule] = useState(false);
+  const [sessions, setSessions] = useState([]); // List of scheduled class sessions fetched from the server
+  const [loadingClasses, setLoadingClasses] = useState(true); // Loading state for classes and basic resource queries
+  const [loadingSchedule, setLoadingSchedule] = useState(false); // Loading state for active class schedule list
   
-  const [draftCourse, setDraftCourse] = useState('');
-  const [draftTeacher, setDraftTeacher] = useState('');
-  const [draftRoom, setDraftRoom] = useState('');
-  const [draftType, setDraftType] = useState('LECTURE');
-  const [draftGroup, setDraftGroup] = useState('');
+  // --- States for configuring a new draft session to be dragged ---
+  const [draftCourse, setDraftCourse] = useState(''); // Selected course ID for draft session card
+  const [draftTeacher, setDraftTeacher] = useState(''); // Selected teacher ID for draft session card
+  const [draftRoom, setDraftRoom] = useState(''); // Selected room ID for draft session card
+  const [draftType, setDraftType] = useState('LECTURE'); // Selected session type (LECTURE, TUTORIAL, PRACTICAL)
+  const [draftGroup, setDraftGroup] = useState(''); // Text representing specific group label (e.g. Gr 1)
 
-  // Load department classes and resources
+  // Load department classes and resources list upon component initialization
   useEffect(() => {
     async function fetchData() {
       try {
+        // Fetch classes, courses, teachers, and rooms in parallel
         const [depts, coursesData, teachersData, roomsData] = await Promise.all([
           departmentService.getMyDepartment(),
           academicService.getMyCourses(),
@@ -54,6 +60,7 @@ export default function SchedulePage() {
           academicService.getRooms()
         ]);
 
+        // If department data returns, extract, sort, and select the first class as default active
         if (depts && depts.length > 0) {
            const classList = depts[0].classes || [];
            setClasses(classList.sort((a,b) => a.name.localeCompare(b.name)));
@@ -65,66 +72,76 @@ export default function SchedulePage() {
         setTeachers(teachersData);
         setRooms(roomsData);
 
-      } catch (err) { console.error(err); }
-      finally { setLoadingClasses(false); }
+      } catch (err) { 
+        console.error(err); // Log any network errors to the console
+      } finally { 
+        setLoadingClasses(false); // Disable core loader
+      }
     }
     fetchData();
   }, []);
 
-  // Load Schedule when class changes
+  // Fetch the schedule/sessions from backend database whenever the active class filter changes
   useEffect(() => {
     async function fetchSchedule() {
-      if (!selectedClass) return;
+      if (!selectedClass) return; // Exit if no class is selected
       
       const targetId = selectedClass.externalId || selectedClass._id;
       if (!targetId) {
-        setSessions([]);
+        setSessions([]); // Clear sessions if identifier is invalid
         return;
       }
       
-      setLoadingSchedule(true);
+      setLoadingSchedule(true); // Start schedule rendering spinner
       try {
-        const data = await academicService.getSchedule(targetId);
-        setSessions(data);
+        const data = await academicService.getSchedule(targetId); // Query backend schedule endpoint
+        setSessions(data); // Save results to sessions list
       } catch (err) { 
         console.error(err);
-        setSessions([]);
+        setSessions([]); // Reset sessions if database read fails
+      } finally { 
+        setLoadingSchedule(false); // Stop schedule rendering spinner
       }
-      finally { setLoadingSchedule(false); }
     }
     fetchSchedule();
-  }, [selectedClass]);
+  }, [selectedClass]); // Dependency array: trigger fetch schedule when selectedClass changes
 
-  // Helper to map sessions to the grid [day][slot]
+  // Map session array to a readable grid coordinate dictionary [dayOfWeek][timeSlot]
   const scheduleMatrix = useMemo(() => {
     const matrix = {};
+    // Populate matrix structure with empty lists for each slot and day combinations
     for (let d = 1; d <= 6; d++) {
       matrix[d] = {};
       for (let s = 1; s <= 6; s++) {
         matrix[d][s] = []; 
       }
     }
+    // Distribute fetched session objects into their respective coordinates
     sessions.forEach(session => {
        if (matrix[session.dayOfWeek] && matrix[session.dayOfWeek][session.timeSlot]) {
           matrix[session.dayOfWeek][session.timeSlot].push(session);
        }
     });
     return matrix;
-  }, [sessions]);
+  }, [sessions]); // Re-compute matrix coordinates only when sessions list changes
 
-  // --- Drag and Drop Handlers ---
+  // --- Drag and Drop Logic Handlers ---
 
+  // Triggered when user starts dragging the newly configured draft session card
   const handleDragStartDraft = (e) => {
+    // Validate that necessary details (subject, instructor, classroom) are fully set
     if (!draftCourse || !draftTeacher || !draftRoom) {
       e.preventDefault();
       alert("Veuillez sélectionner un cours, un enseignant et une salle pour le brouillon.");
       return;
     }
     
+    // Find objects references to capture names and details
     const courseObj = courses.find(c => c._id === draftCourse);
     const teacherObj = teachers.find(t => t._id === draftTeacher);
     const roomObj = rooms.find(r => r._id === draftRoom);
 
+    // Save configuration parameters inside string JSON structure to extract on drop target
     e.dataTransfer.setData('text/plain', JSON.stringify({
       type: 'draft',
       course: courseObj._id,
@@ -136,25 +153,29 @@ export default function SchedulePage() {
     }));
   };
 
+  // Triggered when dragging an already scheduled session from one grid cell to another
   const handleDragStartExisting = (e, session) => {
     e.dataTransfer.setData('text/plain', JSON.stringify({
       type: 'existing',
-      sessionId: session._id
+      sessionId: session._id // Save existing session record database ID
     }));
   };
 
+  // Fired when dragged item moves over a drop cell, styling the cell border to show target highlight
   const handleDragOver = (e) => {
-    e.preventDefault(); // allow dropping
-    e.currentTarget.classList.add('bg-indigo-50/50');
+    e.preventDefault(); // Required by browser rules to allow triggering drop events
+    e.currentTarget.classList.add('bg-indigo-50/50'); // Highlight background overlay style
   };
 
+  // Remove highlight background styling when dragged card leaves target drop cell area
   const handleDragLeave = (e) => {
     e.currentTarget.classList.remove('bg-indigo-50/50');
   };
 
+  // Handles actual drop of a card onto a day/timeslot grid cell
   const handleDrop = async (e, dayOfWeek, timeSlot) => {
     e.preventDefault();
-    e.currentTarget.classList.remove('bg-indigo-50/50');
+    e.currentTarget.classList.remove('bg-indigo-50/50'); // Reset highlight style
     
     if (!selectedClass) {
       alert("Erreur: Aucune classe sélectionnée.");
@@ -162,6 +183,7 @@ export default function SchedulePage() {
     }
 
     try {
+      // Decode data string from drag payload
       const dataStr = e.dataTransfer.getData('text/plain') || e.dataTransfer.getData('application/json');
       if (!dataStr) {
         alert("Erreur: Les données du glisser-déposer sont vides. Veuillez réessayer.");
@@ -170,6 +192,7 @@ export default function SchedulePage() {
       const data = JSON.parse(dataStr);
 
       if (data.type === 'draft') {
+        // Create new session object and save it to the database
         const payload = {
           course: data.course,
           courseName: data.courseName,
@@ -183,12 +206,13 @@ export default function SchedulePage() {
           semester: 1, 
           group: data.group
         };
-        const newSession = await academicService.addSession(payload);
-        setSessions(prev => [...prev, newSession]);
+        const newSession = await academicService.addSession(payload); // API POST create call
+        setSessions(prev => [...prev, newSession]); // Push new session object directly into active list
         
       } else if (data.type === 'existing') {
-        const updatedSession = await academicService.updateSession(data.sessionId, { dayOfWeek, timeSlot });
-        setSessions(prev => prev.map(s => s._id === data.sessionId ? updatedSession : s));
+        // Update grid position (day and timeslot) of an existing session
+        const updatedSession = await academicService.updateSession(data.sessionId, { dayOfWeek, timeSlot }); // API PUT update call
+        setSessions(prev => prev.map(s => s._id === data.sessionId ? updatedSession : s)); // Update session state item
       }
     } catch (error) {
       console.error('Drop error:', error);
@@ -196,11 +220,12 @@ export default function SchedulePage() {
     }
   };
 
+  // Delete a specific session from schedule database after user confirms action
   const handleDeleteSession = async (id) => {
-    if (!confirm('Voulez-vous vraiment supprimer cette session ?')) return;
+    if (!confirm('Voulez-vous vraiment supprimer cette session ?')) return; // Safety check confirmation
     try {
-      await academicService.deleteSession(id);
-      setSessions(prev => prev.filter(s => s._id !== id));
+      await academicService.deleteSession(id); // Delete call to backend api
+      setSessions(prev => prev.filter(s => s._id !== id)); // Remove deleted item from local state list
     } catch (error) {
       console.error('Delete error', error);
       alert('Erreur lors de la suppression.');
@@ -218,6 +243,7 @@ export default function SchedulePage() {
 
   return (
     <div className="space-y-6">
+      {/* Header element containing Title, icons, description, and selector dropdown */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2 tracking-tight">
@@ -254,6 +280,7 @@ export default function SchedulePage() {
         </div>
       </div>
 
+      {/* Main content grid: sidebar creation settings (left) and calendar view (right) */}
       <div className="flex flex-col xl:flex-row gap-6">
         {/* Sidebar for Drag Source */}
         <div className="w-full xl:w-[340px] shrink-0 space-y-4">
@@ -268,6 +295,7 @@ export default function SchedulePage() {
                </div>
              </div>
              <CardContent className="p-5 space-y-5">
+                {/* 1. Subject / Course select field */}
                 <div className="space-y-2">
                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex justify-between items-center">
                       Matière / Cours 
@@ -285,6 +313,7 @@ export default function SchedulePage() {
                    </div>
                 </div>
 
+                {/* 2. Instructor / Teacher select field */}
                 <div className="space-y-2">
                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex justify-between items-center">
                       Enseignant
@@ -302,6 +331,7 @@ export default function SchedulePage() {
                    </div>
                 </div>
 
+                {/* 3. Room / Classroom booking select field */}
                 <div className="space-y-2">
                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex justify-between items-center">
                       Salle
@@ -319,6 +349,7 @@ export default function SchedulePage() {
                    </div>
                 </div>
 
+                {/* 4. Type & Group configurations input row */}
                 <div className="grid grid-cols-2 gap-4">
                    <div className="space-y-2">
                      <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Type</label>
@@ -347,10 +378,11 @@ export default function SchedulePage() {
                    </div>
                 </div>
 
+                {/* Draggable session card template (visible when settings are fully completed) */}
                 {draftCourse && draftTeacher && draftRoom ? (
                   <button 
                     type="button"
-                    draggable="true"
+                    draggable="true" // Make HTML element draggable
                     onDragStart={handleDragStartDraft}
                     className={`w-full mt-6 text-left rounded-xl p-3 border-l-4 ${getTypeColors(draftType)} relative group cursor-grab active:cursor-grabbing hover:-translate-y-1 transition-all shadow-md focus:outline-none focus:ring-4 focus:ring-accent/20`}
                   >
@@ -383,6 +415,7 @@ export default function SchedulePage() {
                      </div>
                   </button>
                 ) : (
+                  // Placeholder disabled state prompt showing config tasks requirements
                   <div className="w-full mt-8 border-2 border-dashed border-slate-200 bg-slate-50/50 rounded-xl p-4 flex flex-col items-center justify-center cursor-not-allowed opacity-60">
                      <GripVertical size={24} className="text-slate-400 mb-1.5" />
                      <span className="font-bold text-sm text-slate-400">Complétez les champs</span>

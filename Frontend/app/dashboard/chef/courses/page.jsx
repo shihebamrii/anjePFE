@@ -1,46 +1,55 @@
-'use client';
+'use client'; // Enable client component interactive state rendering
 
-import { useState, useEffect, useMemo } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { LoadingPage } from '@/components/ui/loading';
-import { academicService } from '@/services/academicService';
+import { useState, useEffect, useMemo } from 'react'; // React hooks for local state, mounting, and performance optimizations
+import { Card, CardContent } from '@/components/ui/card'; // Card block layouts
+import { Badge } from '@/components/ui/badge'; // Status badge labels
+import { Input } from '@/components/ui/input'; // Text input form fields
+import { Button } from '@/components/ui/button'; // Button triggers
+import { LoadingPage } from '@/components/ui/loading'; // Dynamic fullscreen loading spinner
+import { academicService } from '@/services/academicService'; // API services module handling courses endpoints
+// Modal dialog wrappers
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from '@/components/ui/dialog';
+// Lucide icons representing books, search, hour counts, levels, additions and options
 import { BookOpen, Search, Clock, GraduationCap, Plus, Pencil, Trash2 } from 'lucide-react';
 
+// Static template mapping values for default empty form state initialization
 const emptyForm = { name: '', code: '', semester: 1, level: 1, hours: { lectures: 0, tutorials: 0, practicals: 0 }, trackName: '' };
 
 export default function CoursesPage() {
-  const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [semesterFilter, setSemesterFilter] = useState('');
+  const [courses, setCourses] = useState([]); // Store fetched lesson courses configuration lists
+  const [loading, setLoading] = useState(true); // Tracking initial load spinner visibility
+  const [search, setSearch] = useState(''); // Text search string filtering courses list
+  const [semesterFilter, setSemesterFilter] = useState(''); // Selected semester filter value
 
-  // CRUD state
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [editingCourse, setEditingCourse] = useState(null);
-  const [deletingCourse, setDeletingCourse] = useState(null);
-  const [form, setForm] = useState(emptyForm);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
+  // CRUD dialog modals controls states
+  const [dialogOpen, setDialogOpen] = useState(false); // Controls add/edit dialog overlay popup window
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false); // Controls delete confirmation alert modal
+  const [editingCourse, setEditingCourse] = useState(null); // Course reference target currently open for updates
+  const [deletingCourse, setDeletingCourse] = useState(null); // Course reference target designated for deletion
+  const [form, setForm] = useState(emptyForm); // Active input values within modals
+  const [saving, setSaving] = useState(false); // API request commit progress loader state
+  const [error, setError] = useState(''); // Modal error alerts text label
 
+  // Load department courses list on initial component mount
   useEffect(() => {
     fetchData();
   }, []);
 
+  // Async query fetching active chief's department courses lists
   async function fetchData() {
     try {
       const data = await academicService.getMyCourses();
       setCourses(data);
-    } catch (err) { console.error(err); }
-    finally { setLoading(false); }
+    } catch (err) { 
+      console.error(err); 
+    } finally { 
+      setLoading(false); 
+    }
   }
 
+  // Filter department courses dynamically based on keyword search matching code/track and semester selections
   const filtered = useMemo(() => {
     return courses.filter(c => {
       const matchSearch = `${c.name} ${c.code} ${c.trackName}`.toLowerCase().includes(search.toLowerCase());
@@ -49,13 +58,15 @@ export default function CoursesPage() {
     });
   }, [courses, search, semesterFilter]);
 
+  // Open modal in creation mode
   function handleAdd() {
     setEditingCourse(null);
-    setForm(emptyForm);
+    setForm(emptyForm); // Reset forms to template
     setError('');
     setDialogOpen(true);
   }
 
+  // Open modal in edit mode with prefilled details
   function handleEdit(course) {
     setEditingCourse(course);
     setForm({
@@ -74,6 +85,7 @@ export default function CoursesPage() {
     setDialogOpen(true);
   }
 
+  // Commit form updates back to server database
   async function handleSave() {
     if (!form.name.trim() || !form.code.trim()) {
       setError('Nom et code sont requis.');
@@ -93,13 +105,15 @@ export default function CoursesPage() {
         },
       };
       if (editingCourse) {
+        // Run update query if edit reference target is active
         await academicService.updateCourse(editingCourse._id, payload);
       } else {
+        // Run addition request
         await academicService.addCourse(payload);
       }
-      setDialogOpen(false);
+      setDialogOpen(false); // Dismiss modal window
       setLoading(true);
-      await fetchData();
+      await fetchData(); // Reload list details
     } catch (err) {
       setError(err.response?.data?.message || 'Une erreur est survenue.');
     } finally {
@@ -107,20 +121,22 @@ export default function CoursesPage() {
     }
   }
 
+  // Trigger delete confirmation prompt
   function handleDeleteClick(course) {
     setDeletingCourse(course);
     setDeleteDialogOpen(true);
   }
 
+  // Perform course deletion task
   async function handleDeleteConfirm() {
     if (!deletingCourse) return;
     setSaving(true);
     try {
       await academicService.deleteCourse(deletingCourse._id);
-      setDeleteDialogOpen(false);
+      setDeleteDialogOpen(false); // Close dialog
       setDeletingCourse(null);
       setLoading(true);
-      await fetchData();
+      await fetchData(); // Reload department details
     } catch (err) {
       console.error(err);
     } finally {
@@ -128,10 +144,14 @@ export default function CoursesPage() {
     }
   }
 
+  // Show generic fullscreen spinner if page load is still in progress
   if (loading) return <LoadingPage />;
 
   return (
+    // Outer page layout stack
     <div className="space-y-6">
+      
+      {/* Title section and Add Course button trigger */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2 tracking-tight">
@@ -146,7 +166,7 @@ export default function CoursesPage() {
         </Button>
       </div>
 
-      {/* Filters */}
+      {/* Dynamic search input and semester tags filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
@@ -154,6 +174,7 @@ export default function CoursesPage() {
         </div>
         <div className="flex gap-2">
           {['', '1', '2'].map(sem => (
+            // Selectable semester filter buttons
             <button key={sem} onClick={() => setSemesterFilter(sem)}
               className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                 semesterFilter === sem ? 'bg-accent text-white shadow-md shadow-accent/20' : 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 shadow-sm'
@@ -164,9 +185,10 @@ export default function CoursesPage() {
         </div>
       </div>
 
-      {/* Grid */}
+      {/* Grid rendering active courses */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
         {filtered.map((course, i) => (
+          // Individual Course card layout
           <Card key={course._id || i} className="border-0 card-interactive group overflow-hidden">
             <div className="h-1.5 w-full bg-gradient-to-r from-emerald-400 to-teal-500" />
             <CardContent className="p-5">
@@ -182,8 +204,8 @@ export default function CoursesPage() {
                     </Badge>
                   </div>
                 </div>
+                {/* Action controls and total hours box column */}
                 <div className="flex flex-col items-end shrink-0">
-                  {/* Actions */}
                   <div className="flex items-center gap-1 mb-2">
                     <button onClick={() => handleEdit(course)} className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950 text-blue-500 transition-colors" title="Modifier">
                       <Pencil size={14} />
@@ -202,13 +224,14 @@ export default function CoursesPage() {
                 </div>
               </div>
 
+              {/* Course pathway labels and Hourly breakdown cards row */}
               <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
                 <div className="flex items-center gap-2 text-[13px] text-slate-600 dark:text-slate-400 font-medium">
                   <GraduationCap size={14} className="text-slate-400 shrink-0" />
                   <span className="truncate">{course.trackName || 'Toutes filières'} (L{course.level})</span>
                 </div>
 
-                {/* Volume Horaire breakdown */}
+                {/* Detailed horaire distribution (Cours, TD, TP details) */}
                 <div className="flex items-center gap-2">
                   <div className="flex-1 bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-800 rounded-lg px-2 py-1.5 flex flex-col items-center">
                     <span className="text-[10px] font-bold uppercase opacity-70">Cours</span>
@@ -229,6 +252,7 @@ export default function CoursesPage() {
         ))}
       </div>
 
+      {/* Empty list alert warning label */}
       {filtered.length === 0 && (
         <Card className="border-0 bg-transparent shadow-none">
           <CardContent className="flex flex-col items-center justify-center py-16 text-center">
@@ -238,7 +262,7 @@ export default function CoursesPage() {
         </Card>
       )}
 
-      {/* Add/Edit Dialog */}
+      {/* Course Create and Edit Modal popup */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
@@ -313,7 +337,7 @@ export default function CoursesPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete confirmation alert block */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>

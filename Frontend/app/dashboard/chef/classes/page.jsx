@@ -1,49 +1,59 @@
-'use client';
+'use client'; // Client interactive components execution path
 
-import { useState, useEffect, useMemo } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { LoadingPage } from '@/components/ui/loading';
-import { departmentService } from '@/services/departmentService';
+import { useState, useEffect, useMemo } from 'react'; // React hooks for local state and calculations
+import { Card, CardContent } from '@/components/ui/card'; // Card block layouts
+import { Badge } from '@/components/ui/badge'; // Status badge labels
+import { Input } from '@/components/ui/input'; // Custom input text boxes
+import { Button } from '@/components/ui/button'; // Buttons controls
+import { LoadingPage } from '@/components/ui/loading'; // Screen spinner block wrapper
+import { departmentService } from '@/services/departmentService'; // Services module to interact with department API calls
+// Import modal dialog layout primitives
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from '@/components/ui/dialog';
+// Icons representing schools, queries, student totals and operations
 import { School, Search, Users, GraduationCap, Plus, Pencil, Trash2 } from 'lucide-react';
 
+// Static class template object representing default empty form state values
 const emptyForm = { name: '', level: 1, track: '', students: 0, academicYear: '2025-2026' };
 
 export default function ClassesPage() {
-  const [departments, setDepartments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [levelFilter, setLevelFilter] = useState('');
+  const [departments, setDepartments] = useState([]); // Store fetched departments configuration list
+  const [loading, setLoading] = useState(true); // Tracking fetching status
+  const [search, setSearch] = useState(''); // Text search string filtering lists
+  const [levelFilter, setLevelFilter] = useState(''); // Target academic level filter (L1, L2, L3)
 
-  // CRUD state
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [editingClass, setEditingClass] = useState(null);
-  const [deletingClass, setDeletingClass] = useState(null);
-  const [form, setForm] = useState(emptyForm);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
+  // Dialog and operation modal trigger states
+  const [dialogOpen, setDialogOpen] = useState(false); // Add/Edit popup modal state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false); // Delete confirmation alert modal state
+  const [editingClass, setEditingClass] = useState(null); // Reference to class object currently open for edits
+  const [deletingClass, setDeletingClass] = useState(null); // Reference to class target designated for deletion
+  const [form, setForm] = useState(emptyForm); // Active input values within modals
+  const [saving, setSaving] = useState(false); // API request save progress loader state
+  const [error, setError] = useState(''); // Modal error alerts text label
 
+  // Load department info on initial component mount
   useEffect(() => {
     fetchData();
   }, []);
 
+  // Async query fetching active chief's department classes lists
   async function fetchData() {
     try {
       const data = await departmentService.getMyDepartment();
       setDepartments(data);
-    } catch (err) { console.error(err); }
-    finally { setLoading(false); }
+    } catch (err) { 
+      console.error(err); 
+    } finally { 
+      setLoading(false); 
+    }
   }
 
+  // Extract first department entry
   const dept = departments[0];
-  const classesList = dept?.classes || [];
+  const classesList = dept?.classes || []; // Active department classes list
 
+  // Filter list dynamically based on search keyword matches and level selections
   const filtered = useMemo(() => {
     return classesList.filter(c => {
       const matchSearch = `${c.name} ${c.track}`.toLowerCase().includes(search.toLowerCase());
@@ -52,13 +62,15 @@ export default function ClassesPage() {
     });
   }, [classesList, search, levelFilter]);
 
+  // Open modal in creation mode
   function handleAdd() {
     setEditingClass(null);
-    setForm(emptyForm);
+    setForm(emptyForm); // Reset forms to template
     setError('');
     setDialogOpen(true);
   }
 
+  // Open modal in edit mode with prefilled details
   function handleEdit(cls) {
     setEditingClass(cls);
     setForm({
@@ -72,6 +84,7 @@ export default function ClassesPage() {
     setDialogOpen(true);
   }
 
+  // Commit form updates back to server database
   async function handleSave() {
     if (!form.name.trim() || !form.level) {
       setError('Nom et niveau sont requis.');
@@ -82,13 +95,15 @@ export default function ClassesPage() {
     try {
       const payload = { ...form, level: Number(form.level), students: Number(form.students) };
       if (editingClass) {
+        // Run update query if edit reference target is active
         await departmentService.updateClass(editingClass._id, payload);
       } else {
+        // Run addition request
         await departmentService.addClass(payload);
       }
-      setDialogOpen(false);
+      setDialogOpen(false); // Dismiss modal window
       setLoading(true);
-      await fetchData();
+      await fetchData(); // Reload list details
     } catch (err) {
       setError(err.response?.data?.message || 'Une erreur est survenue.');
     } finally {
@@ -96,20 +111,22 @@ export default function ClassesPage() {
     }
   }
 
+  // Trigger delete confirmation prompt
   function handleDeleteClick(cls) {
     setDeletingClass(cls);
     setDeleteDialogOpen(true);
   }
 
+  // Perform class deletion task
   async function handleDeleteConfirm() {
     if (!deletingClass) return;
     setSaving(true);
     try {
       await departmentService.deleteClass(deletingClass._id);
-      setDeleteDialogOpen(false);
+      setDeleteDialogOpen(false); // Close dialog
       setDeletingClass(null);
       setLoading(true);
-      await fetchData();
+      await fetchData(); // Reload department details
     } catch (err) {
       console.error(err);
     } finally {
@@ -117,11 +134,15 @@ export default function ClassesPage() {
     }
   }
 
+  // Show generic fullscreen spinner if page load is still in progress
   if (loading) return <LoadingPage />;
   if (!dept) return <div className="p-8 text-center text-slate-400">Aucun département trouvé.</div>;
 
   return (
+    // Outer content wrapper
     <div className="space-y-6">
+      
+      {/* Title section and Add Class button trigger */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2 tracking-tight">
@@ -136,7 +157,7 @@ export default function ClassesPage() {
         </Button>
       </div>
 
-      {/* Filters */}
+      {/* Dynamic search input and level tags list filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
@@ -144,6 +165,7 @@ export default function ClassesPage() {
         </div>
         <div className="flex gap-2">
           {['', '1', '2', '3'].map(level => (
+            // Selectable level tag buttons
             <button key={level} onClick={() => setLevelFilter(level)}
               className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                 levelFilter === level ? 'bg-accent text-white shadow-md shadow-accent/20' : 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 shadow-sm'
@@ -154,9 +176,10 @@ export default function ClassesPage() {
         </div>
       </div>
 
-      {/* Grid */}
+      {/* Grid rendering active classes */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {filtered.map((cls, i) => (
+          // Individual Class card layout
           <Card key={cls._id || i} className="border-0 card-interactive group overflow-hidden">
             <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 to-violet-600" />
             <CardContent className="p-5">
@@ -167,6 +190,7 @@ export default function ClassesPage() {
                     Licence {cls.level}
                   </Badge>
                 </div>
+                {/* Total student count detail */}
                 <div className="flex flex-col items-end">
                   <span className="text-xs text-slate-400 font-medium">Effectif</span>
                   <div className="flex items-center gap-1.5 text-slate-700 font-bold mt-0.5">
@@ -176,6 +200,7 @@ export default function ClassesPage() {
                 </div>
               </div>
 
+              {/* Class pathway details and Edit/Delete options row */}
               <div className="pt-3 flex items-start gap-2 border-t border-slate-100 dark:border-slate-800">
                 <GraduationCap size={14} className="text-slate-400 mt-0.5 shrink-0" />
                 <p className="text-[13px] text-slate-600 dark:text-slate-400 font-medium leading-snug flex-1">{cls.track}</p>
@@ -193,6 +218,7 @@ export default function ClassesPage() {
         ))}
       </div>
 
+      {/* Empty list alert warning label */}
       {filtered.length === 0 && (
         <Card className="border-0 bg-transparent shadow-none">
           <CardContent className="flex flex-col items-center justify-center py-16 text-center">
@@ -202,7 +228,7 @@ export default function ClassesPage() {
         </Card>
       )}
 
-      {/* Add/Edit Dialog */}
+      {/* Class Create and Edit Modal popup */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -250,7 +276,7 @@ export default function ClassesPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete confirmation alert block */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
